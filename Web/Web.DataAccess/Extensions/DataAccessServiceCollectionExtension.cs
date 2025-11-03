@@ -12,6 +12,7 @@ public static class DataAccessServiceCollectionExtension
     {
         services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IConferenceRepository, ConferenceRepository>();
+        services.AddScoped<IInvoiceRepository, InvoiceRepository>();
         
         return services;
     }
