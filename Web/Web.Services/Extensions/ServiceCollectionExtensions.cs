@@ -12,7 +12,6 @@ public static class ServiceCollectionExtensions
         services.AddAutoMapper(typeof(AutoMapperProfile));
         services.AddScoped<IConferenceService, ConferenceService>();
         services.AddScoped<IInvoiceService, InvoiceService>();
-        services.AddScoped<IPdfService, PdfService>();
 
         return services;
     }

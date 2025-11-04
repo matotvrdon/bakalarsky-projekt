@@ -21,9 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="Resources\PDF\Faktura.pdf">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
+      <Folder Include="Resources\PDF\" />
     </ItemGroup>
 
 </Project>
