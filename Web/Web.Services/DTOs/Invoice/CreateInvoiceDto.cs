@@ -2,6 +2,8 @@ namespace Web.Services.DTOs.Invoice;
 
 public class CreateInvoiceDto
 {
-    DateTime IssueDate { get; set; }
-    DateTime DueDate { get; set; }
+    public int SupplierDtoId { get; set; }
+    public int CustomerDtoId { get; set; }
+    public DateTime IssueDate { get; set; }
+    public DateTime DueDate { get; set; }
 }

@@ -5,19 +5,18 @@ using Web.Domain.Models;
 
 namespace Web.DataAccess.Repositories;
 
-public class SupplierRepository : ISupplierRepository
+public class CustomerRepository : ICustomerRepository
 {
-    
     private readonly ApplicationDbContext _context;
 
-    public SupplierRepository(ApplicationDbContext context)
+    public CustomerRepository(ApplicationDbContext context)
     {
         _context = context;
     }
 
-    public async Task<Supplier?> GetByIdAsync(int id)
+    public async Task<Customer?> GetByIdAsync(int id)
     {
-        return await _context.Supplier
+        return await _context.Customer
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 }
