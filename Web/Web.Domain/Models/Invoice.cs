@@ -11,4 +11,5 @@ public class Invoice
     public Supplier Supplier { get; set; }
     public int CustomerId { get; set; }
     public Customer Customer { get; set; }
+    public List<InvoiceItem> InvoiceItem { get; set; }
 }

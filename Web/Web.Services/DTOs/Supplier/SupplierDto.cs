@@ -18,6 +18,5 @@ public class SupplierDto
     public string BankAccount { get; set; }
     public string Swift { get; set; }
     public string Iban { get; set; }
-    
     public string Phone { get; set; }
 }

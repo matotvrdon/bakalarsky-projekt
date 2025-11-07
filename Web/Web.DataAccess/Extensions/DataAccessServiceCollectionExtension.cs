@@ -15,6 +15,7 @@ public static class DataAccessServiceCollectionExtension
         services.AddScoped<IInvoiceRepository, InvoiceRepository>();
         services.AddScoped<ISupplierRepository, SupplierRepository>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
+        services.AddScoped<IInvoiceItemRepository, InvoiceItemRepository>();
         
         return services;
     }
