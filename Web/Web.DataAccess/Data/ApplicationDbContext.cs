@@ -13,6 +13,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Invoice> Invoice { get; set; }
     public DbSet<Supplier> Supplier { get; set; }
     public DbSet<Customer> Customer { get; set; }
+    public DbSet<InvoiceItem> InvoiceItem { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -57,6 +58,45 @@ public class ApplicationDbContext : DbContext
                     IcDph = "SK2021681970",
                 }
             );
+        });
+
+        modelBuilder.Entity<InvoiceItem>(e =>
+        {
+            e.HasData(
+                new InvoiceItem {
+                    Id = 1,
+                    Name = "Registrácia na konferenciu",
+                    Unit = "ks",
+                    UnitPrice = 100.00m,
+                    Quantity = 1,
+                    Price = 100.00m,
+                    InvoiceId = 1
+                }
+            );
+
+            e.HasData(
+                new InvoiceItem {
+                    Id = 2,
+                    Name = "Obed",
+                    Unit = "ks",
+                    UnitPrice = 10.00m,
+                    Quantity = 3,
+                    Price = 30.00m,
+                    InvoiceId = 1
+                }
+            );
+            e.HasData(
+                new InvoiceItem {
+                    Id = 3,
+                    Name = "Obed",
+                    Unit = "ks",
+                    UnitPrice = 10.00m,
+                    Quantity = 3,
+                    Price = 30.00m,
+                    InvoiceId = 2
+                }
+            );
+
         });
     }
 }

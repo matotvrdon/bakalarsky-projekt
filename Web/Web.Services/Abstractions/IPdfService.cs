@@ -4,5 +4,5 @@ namespace Web.Services.Abstractions;
 
 public interface IPdfService
 {
-    Task<byte[]> GeneratePdf(CreateInvoiceDto createInvoiceDto);
+    Task<byte[]> GeneratePdf(int invoiceId);
 }

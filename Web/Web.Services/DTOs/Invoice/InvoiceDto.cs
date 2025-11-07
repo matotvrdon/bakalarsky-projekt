@@ -1,5 +1,5 @@
-using Web.Domain.Models;
 using Web.Services.DTOs.Customer;
+using Web.Services.DTOs.InvoiceItem;
 using Web.Services.DTOs.Supplier;
 
 namespace Web.Services.DTOs.Invoice;
@@ -11,6 +11,7 @@ public class InvoiceDto
     public DateTime IssueDate { get; set; }
     public DateTime DueDate { get; set; }
     
-    public CustomerDto CustomerDto { get; set; }
-    public SupplierDto SupplierDto { get; set; }
+    public CustomerDto Customer { get; set; }
+    public SupplierDto Supplier { get; set; }
+    public List<InvoiceItemDto> InvoiceItem { get; set; }
 }

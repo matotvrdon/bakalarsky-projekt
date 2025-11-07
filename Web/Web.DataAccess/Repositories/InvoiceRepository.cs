@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Web.DataAccess.Data;
 using Web.Domain.Abstractions;
@@ -17,7 +18,17 @@ public class InvoiceRepository : IInvoiceRepository
 
     public async Task<Invoice?> GetByIdAsync(int id)
     {
-        return await _context.Invoice
+        var invoice = await _context.Invoice
+            .Include(i => i.Customer)
+            .Include(i => i.Supplier)
+            .Include(i => i.InvoiceItem)
             .FirstOrDefaultAsync(x => x.Id == id);
+        
+        if (invoice != null)
+        {
+            invoice.InvoiceItem = invoice.InvoiceItem.OrderBy(ii => ii.Id).ToList();
+        }
+
+        return invoice;
     }
 }

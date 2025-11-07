@@ -6,8 +6,10 @@ using QuestPDF.Companion;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using Web.Domain.Models;
 using Web.Services.Abstractions;
 using Web.Services.DTOs.Invoice;
+using Web.Services.DTOs.InvoiceItem;
 
 namespace Web.Services.Services
 {
@@ -17,33 +19,44 @@ namespace Web.Services.Services
         private readonly IMapper _mapper;
         private readonly ISupplierService _supplierService;
         private readonly ICustomerService _customerService;
+        private readonly IInvoiceItemService _invoiceItemService;
+        private readonly IInvoiceService _invoiceService;
 
         public PdfService(IHostEnvironment env, IMapper mapper, ISupplierService supplierService,
-            ICustomerService customerService)
+            ICustomerService customerService, IInvoiceItemService invoiceItemService, IInvoiceService invoiceService)
         {
             _env = env;
             _mapper = mapper;
             _supplierService = supplierService;
             _customerService = customerService;
+            _invoiceItemService = invoiceItemService;
+            _invoiceService = invoiceService;
         }
 
-        public async Task<byte[]> GeneratePdf(CreateInvoiceDto createInvoiceDto)
+        public async Task<byte[]> GeneratePdf(int invoiceId)
         {
-            ArgumentNullException.ThrowIfNull(createInvoiceDto);
-
-            var invoiceDto = _mapper.Map<InvoiceDto>(createInvoiceDto);
+            
+            var invoiceDto = await _invoiceService.GetByIdAsync(invoiceId);
+            
+            // ArgumentNullException.ThrowIfNull(createInvoiceDto);
+            //
+            // var invoiceDto = _mapper.Map<InvoiceDto>(createInvoiceDto);
 
             // invoiceDto.SupplierDto = await _supplierService.GetByIdAsync(createInvoiceDto.SupplierDtoId)
             //     ?? throw new InvalidOperationException($"Supplier with ID {createInvoiceDto.SupplierDtoId} not found.");
             // invoiceDto.CustomerDto = await _customerService.GetByIdAsync(createInvoiceDto.CustomerDtoId)
             //     ?? throw new InvalidOperationException($"Customer with ID {createInvoiceDto.CustomerDtoId} not found.");
-            invoiceDto.SupplierDto = await _supplierService.GetByIdAsync(1) ??
-                                     throw new InvalidOperationException(
-                                         $"Supplier with ID {createInvoiceDto.SupplierDtoId} not found.");
-
-            invoiceDto.CustomerDto = await _customerService.GetByIdAsync(1) ??
-                                     throw new InvalidOperationException(
-                                         $"Customer with ID {createInvoiceDto.CustomerDtoId} not found.");
+            // invoiceDto.SupplierDto = await _supplierService.GetByIdAsync(1)
+            //                          ?? throw new InvalidOperationException(
+            //                              $"Supplier with ID {createInvoiceDto.SupplierDtoId} not found.");
+            //
+            // invoiceDto.CustomerDto = await _customerService.GetByIdAsync(1)
+            //                          ?? throw new InvalidOperationException(
+            //                              $"Customer with ID {createInvoiceDto.CustomerDtoId} not found.");
+            //
+            // invoiceDto.InvoiceItems = await _invoiceItemService.GetAllByInvoiceIdAsync(2)
+            //                           ?? throw new InvalidOperationException(
+            //                               $"Invoice items for Invoice ID {invoiceDto.Id} not found.");
 
             using var ms = new MemoryStream();
 
@@ -69,7 +82,6 @@ namespace Web.Services.Services
                         .Border(1)
                         .Column(column =>
                         {
-                            column.Spacing(10);
 
                             column.Item().Row(row =>
                             {
@@ -80,96 +92,144 @@ namespace Web.Services.Services
                                     .PaddingTop(10)
                                     .Column(column =>
                                     {
-                                        column.Spacing(5);
+                                        column.Spacing(4);
+                                        
+                                        if(!string.IsNullOrWhiteSpace(invoiceDto.Supplier.Name)) {
+                                            column.Item().Text(t =>
+                                            {
+                                                t.Span("Dodávateľ: ").Bold();
+                                                t.Span(invoiceDto.Supplier.Name);
+                                            });
+                                        }
+                                        
+                                        if(!string.IsNullOrWhiteSpace(invoiceDto.Supplier.Street)) {
+                                            column.Item().Text(t =>
+                                            {
+                                                t.Span("Ulica: ").Bold();
+                                                t.Span(invoiceDto.Supplier.Street);
+                                            });
+                                        }
+                                        
+                                        if(!string.IsNullOrWhiteSpace(invoiceDto.Supplier.PostalCode)
+                                           && !string.IsNullOrWhiteSpace(invoiceDto.Supplier.City)) 
+                                        {
+                                            column.Item().Text(t =>
+                                            {
+                                                t.Span("Mesto: ").Bold();
+                                                t.Span(invoiceDto.Supplier.PostalCode);
+                                                t.Span(" ");
+                                                t.Span(invoiceDto.Supplier.City);
+                                            });
+                                        }
+                                        if(!string.IsNullOrWhiteSpace(invoiceDto.Supplier.Country))
+                                        {
+                                            column.Item().Text(t =>
+                                            {
+                                                t.Span("Štát: ").Bold();
+                                                t.Span(invoiceDto.Supplier.Country);
+                                            });
+                                        }
+                                        if(!string.IsNullOrWhiteSpace(invoiceDto.Supplier.Ico))
+                                        {
+                                            column.Item().Text(t =>
+                                            {
+                                                t.Span("IČO: ").Bold();
+                                                t.Span(invoiceDto.Supplier.Ico);
+                                            });
+                                        }
+
+                                        if(!string.IsNullOrWhiteSpace(invoiceDto.Supplier.Dic)) 
+                                        {
+                                            column.Item().Text(t =>
+                                            {
+                                                t.Span("DIČ: ").Bold();
+                                                t.Span(invoiceDto.Supplier.Dic);
+                                            });
+                                        }
+
+                                        if(!string.IsNullOrWhiteSpace(invoiceDto.Supplier.IcDph))
+                                        {
+                                            column.Item().Text(t =>
+                                            {
+                                                t.Span("IČDPH: ").Bold();
+                                                t.Span(invoiceDto.Supplier.IcDph);
+                                            });
+                                        }
+
+                                        if(!string.IsNullOrWhiteSpace(invoiceDto.Supplier.Bank))
+                                        {
+                                            column.Item().Text(t =>
+                                            {
+                                                t.Span("Banka: ").Bold();
+                                                t.Span(invoiceDto.Supplier.Bank);
+                                            });
+                                        }
+                                        
+                                        if(!string.IsNullOrWhiteSpace(invoiceDto.Supplier.Address)
+                                           && !string.IsNullOrWhiteSpace(invoiceDto.Supplier.AddressCity)
+                                           && !string.IsNullOrWhiteSpace(invoiceDto.Supplier.AddressPostalCode))
+                                        {
+                                            column.Item().Text(t =>
+                                            {
+                                                t.Span("Adresa: ").Bold();
+                                                t.Span(invoiceDto.Supplier.Address);
+                                                t.Span("\n");
+                                                t.Span(invoiceDto.Supplier.AddressPostalCode);
+                                                t.Span(" ");
+                                                t.Span(invoiceDto.Supplier.AddressCity);
+                                            });
+                                        }
+
+                                        if(!string.IsNullOrWhiteSpace(invoiceDto.Supplier.Bank)) 
+                                        {
+                                            column.Item().Text(t =>
+                                            {
+                                                t.Span("Banka: ").Bold();
+                                                t.Span(invoiceDto.Supplier.Bank);
+                                            });
+                                        }
+
+                                        if(!string.IsNullOrWhiteSpace(invoiceDto.Supplier.BankAccount))
+                                        {
+                                            column.Item().Text(t =>
+                                            {
+                                                t.Span("Číslo účtu: ").Bold();
+                                                t.Span(invoiceDto.Supplier.BankAccount);
+                                            });
+                                        }
+                                        
+                                        if(!string.IsNullOrWhiteSpace(invoiceDto.Supplier.Swift))
+                                        {
+                                            column.Item().Text(t =>
+                                            {
+                                                t.Span("SWIFT: ").Bold();
+                                                t.Span(invoiceDto.Supplier.Swift);
+                                            });
+                                        }
+                                        
+                                        if(!string.IsNullOrWhiteSpace(invoiceDto.Supplier.Iban))
+                                        {
+                                            column.Item().Text(t =>
+                                            {
+                                                t.Span("IBAN: ").Bold();
+                                                t.Span(invoiceDto.Supplier.Iban);
+                                            });
+                                        }
+                                        
+                                        if(!string.IsNullOrWhiteSpace(invoiceDto.Supplier.Phone)) 
+                                        {
+                                            column.Item().Text(t =>
+                                            {
+                                                t.Span("Telefon: ").Bold();
+                                                t.Span(invoiceDto.Supplier.Phone);
+                                            });
+                                        }
 
                                         column.Item().Text(t =>
                                         {
-                                            t.Span("Dodávateľ: ").Bold();
-                                            t.Span(invoiceDto.SupplierDto.Name);
-                                        });
-
-                                        column.Item().Text(t =>
-                                        {
-                                            t.Span("Ulica: ").Bold();
-                                            t.Span(invoiceDto.SupplierDto.Street);
-                                        });
-
-                                        column.Item().Text(t =>
-                                        {
-                                            t.Span("Mesto: ").Bold();
-                                            t.Span(invoiceDto.SupplierDto.PostalCode);
-                                            t.Span(" ");
-                                            t.Span(invoiceDto.SupplierDto.City);
-                                        });
-
-                                        column.Item().Text(t =>
-                                        {
-                                            t.Span("Štát: ").Bold();
-                                            t.Span(invoiceDto.SupplierDto.Country);
-                                        });
-
-                                        column.Item().Text(t =>
-                                        {
-                                            t.Span("IČO: ").Bold();
-                                            t.Span(invoiceDto.SupplierDto.Ico);
-                                        });
-
-                                        column.Item().Text(t =>
-                                        {
-                                            t.Span("DIČ: ").Bold();
-                                            t.Span(invoiceDto.SupplierDto.Dic);
-                                        });
-
-                                        column.Item().Text(t =>
-                                        {
-                                            t.Span("IČDPH: ").Bold();
-                                            t.Span(invoiceDto.SupplierDto.IcDph);
-                                        });
-
-                                        column.Item().Text(t =>
-                                        {
-                                            t.Span("Banka: ").Bold();
-                                            t.Span(invoiceDto.SupplierDto.Bank);
-                                        });
-
-                                        column.Item().Text(t =>
-                                        {
-                                            t.Span("Adresa: ").Bold();
-                                            t.Span(invoiceDto.SupplierDto.Address);
-                                            t.Span("\n");
-                                            t.Span(invoiceDto.SupplierDto.AddressPostalCode);
-                                            t.Span(" ");
-                                            t.Span(invoiceDto.SupplierDto.AddressCity);
-                                        });
-
-                                        column.Item().Text(t =>
-                                        {
-                                            t.Span("Adresa: ").Bold();
-                                            t.Span(invoiceDto.SupplierDto.Bank);
-                                        });
-
-                                        column.Item().Text(t =>
-                                        {
-                                            t.Span("Číslo účtu: ").Bold();
-                                            t.Span(invoiceDto.SupplierDto.BankAccount);
-                                        });
-
-                                        column.Item().Text(t =>
-                                        {
-                                            t.Span("SWIFT: ").Bold();
-                                            t.Span(invoiceDto.SupplierDto.Swift);
-                                        });
-
-                                        column.Item().Text(t =>
-                                        {
-                                            t.Span("IBAN: ").Bold();
-                                            t.Span(invoiceDto.SupplierDto.Iban);
-                                        });
-
-                                        column.Item().Text(t =>
-                                        {
-                                            t.Span("Telefon: ").Bold();
-                                            t.Span(invoiceDto.SupplierDto.Phone);
+                                            t.Span("Vystavil: ").Bold();
+                                            // TODO: replace with actual user name
+                                            t.Span(Environment.MachineName);
                                         });
                                     });
 
@@ -184,19 +244,57 @@ namespace Web.Services.Services
                                         .PaddingTop(10)
                                         .Column(column =>
                                         {
-                                            column.Spacing(10);
-
-                                            column.Item().Text(t =>
+                                            column.Spacing(4);
+                                            
+                                            if(!string.IsNullOrWhiteSpace(invoiceDto.Customer.Name))
                                             {
-                                                t.Span("Odberateľ: ").Bold();
-                                                t.Span(invoiceDto.CustomerDto.Name);
-                                            });
+                                                column.Item().Text(t =>
+                                                {
+                                                    t.Span("Odberateľ: ").Bold();
+                                                    t.Span(invoiceDto.Customer.Name);
+                                                });
+                                            }
 
-                                            column.Item().Text(t =>
+                                            if(!string.IsNullOrWhiteSpace(invoiceDto.Customer.Street)
+                                               && !string.IsNullOrWhiteSpace(invoiceDto.Customer.PostalCode)
+                                               && !string.IsNullOrWhiteSpace(invoiceDto.Customer.City))
                                             {
-                                                t.Span("Ulica: ").Bold();
-                                                t.Span(invoiceDto.CustomerDto.Street);
-                                            });
+                                                column.Item().Text(t =>
+                                                {
+                                                    t.Span("Adresa: ").Bold();
+                                                    t.Span(invoiceDto.Customer.Street);
+                                                    t.Span("\n");
+                                                    t.Span(invoiceDto.Customer.PostalCode);
+                                                    t.Span(" ");
+                                                    t.Span(invoiceDto.Customer.City);
+                                                });
+                                            }
+
+                                            if(!string.IsNullOrWhiteSpace(invoiceDto.Customer.Ico))
+                                            {
+                                                column.Item().Text(t =>
+                                                {
+                                                    t.Span("IČO: ").Bold();
+                                                    t.Span(invoiceDto.Customer.Ico);
+                                                });
+                                            }
+                                            if(!string.IsNullOrWhiteSpace(invoiceDto.Customer.Dic)) 
+                                            {
+                                                column.Item().Text(t =>
+                                                {
+                                                    t.Span("DIČ: ").Bold();
+                                                    t.Span(invoiceDto.Customer.Dic);
+                                                });
+                                            }
+                                            
+                                            if(!string.IsNullOrWhiteSpace(invoiceDto.Customer.IcDph)) 
+                                            {
+                                                column.Item().Text(t =>
+                                                {
+                                                    t.Span("IČDPH: ").Bold();
+                                                    t.Span(invoiceDto.Customer.IcDph);
+                                                });
+                                            }
                                         });
                                     
                                     column.Item()
@@ -206,39 +304,34 @@ namespace Web.Services.Services
                                         {
                                             table.ColumnsDefinition(columns =>
                                             {
-                                                columns.RelativeColumn(1); // labels
-                                                columns.RelativeColumn(1); // values
+                                                columns.RelativeColumn(1);
+                                                columns.RelativeColumn(1);
                                             });
-
-                                            // row 1
+                                            
                                             table.Cell().Border(1).Element(c => c.PaddingVertical(4).PaddingHorizontal(4))
                                                 .Text("Dátum vyhotovenia:");
                                             table.Cell().Border(1).Element(c => c.PaddingVertical(4).PaddingHorizontal(4))
                                                 .AlignRight()
                                                 .Text(invoiceDto.IssueDate.ToString("dd.MM.yyyy"));
 
-                                            // row 2
                                             table.Cell().Border(1).Element(c => c.PaddingVertical(4).PaddingHorizontal(4))
                                                 .Text("Dátum splatnosti:");
                                             table.Cell().Border(1).Element(c => c.PaddingVertical(4).PaddingHorizontal(4))
                                                 .AlignRight()
                                                 .Text(invoiceDto.DueDate.ToString("dd.MM.yyyy"));
 
-                                            // row 3
                                             table.Cell().Border(1).Element(c => c.PaddingVertical(3).PaddingHorizontal(4))
                                                 .Text("Variabilný symbol:");
                                             table.Cell().Border(1).Element(c => c.PaddingVertical(3).PaddingHorizontal(4))
                                                 .AlignRight()
                                                 .Text("1");
 
-                                            // row 4
                                             table.Cell().Border(1).Element(c => c.PaddingVertical(3).PaddingHorizontal(4))
                                                 .Text("Forma úhrady:");
                                             table.Cell().Border(1).Element(c => c.PaddingVertical(3).PaddingHorizontal(4))
                                                 .AlignRight()
                                                 .Text("1");
 
-                                            // row 5
                                             table.Cell().Border(1).Element(c => c.PaddingVertical(3).PaddingHorizontal(4))
                                                 .Text("Konštantný symbol:");
                                             table.Cell().Border(1).Element(c => c.PaddingVertical(3).PaddingHorizontal(4))
@@ -248,6 +341,66 @@ namespace Web.Services.Services
 
                                 });
                             });
+
+                            column.Item().Column(column =>
+                            {
+                                column.Spacing(10);
+                                
+                                column.Item().Border(1).Element(c => c.PaddingVertical(10).PaddingHorizontal(10))
+                                    .Text("Na základe Vašej objednávky Vám fakturujeme: ").Bold();
+                            });
+
+                            column.Item().Row(row =>
+                            {
+                                row.RelativeItem()
+                                    .Border(1)
+                                    .Padding(10)
+                                    .Table(table =>
+                                    {
+                                        table.ColumnsDefinition(columns =>
+                                        {
+                                            columns.RelativeColumn(2);
+                                            columns.RelativeColumn(12);
+                                            columns.RelativeColumn(2.5f);
+                                            columns.RelativeColumn(3);
+                                            columns.RelativeColumn(3);
+                                            columns.RelativeColumn(3);
+                                        });
+                                        
+                                        table.Header(header =>
+                                        {
+                                            header.Cell().Border(1).AlignCenter().Element(c => c.Padding(2)).Text("P. č");
+                                            header.Cell().Border(1).AlignCenter().Element(c => c.Padding(2)).Text("Popis");
+                                            header.Cell().Border(1).AlignCenter().Element(c => c.Padding(2)).Text("MJ");
+                                            header.Cell().Border(1).AlignCenter().Element(c => c.Padding(2)).Text("Cena za j.");
+                                            header.Cell().Border(1).AlignCenter().Element(c => c.Padding(2)).Text("Množstvo");
+                                            header.Cell().Border(1).AlignCenter().Element(c => c.Padding(2)).Text("Spolu");
+                                        });
+                                        
+                                        int itemNumber = 1;
+
+                                        foreach (var item in invoiceDto.InvoiceItem) {
+                                            table.Cell().Border(1).Element(c => c.Padding(2))
+                                                .AlignCenter()
+                                                .Text(itemNumber++.ToString());
+                                            table.Cell().Border(1).Element(c => c.Padding(2))
+                                                .Text(item.Name);
+                                            table.Cell().Border(1).Element(c => c.Padding(2))
+                                                .AlignCenter()
+                                                .Text(item.Unit);
+                                            table.Cell().Border(1).Element(c => c.Padding(2))
+                                                .AlignRight()
+                                                .Text(item.UnitPrice.ToString("F2", CultureInfo.InvariantCulture));
+                                            table.Cell().Border(1).Element(c => c.Padding(2))
+                                                .AlignRight()
+                                                .Text(item.Quantity.ToString("F2", CultureInfo.InvariantCulture));
+                                            table.Cell().Border(1).Element(c => c.Padding(2))
+                                                .AlignRight()
+                                                .Text(item.Price.ToString("F2", CultureInfo.InvariantCulture));
+                                        }
+                                    });
+                            });
+
                         });
 
                     page.Footer()
