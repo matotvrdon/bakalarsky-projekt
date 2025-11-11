@@ -1,3 +1,4 @@
+using Web.Services.DTOs.Attendee;
 using Web.Services.DTOs.Customer;
 using Web.Services.DTOs.InvoiceItem;
 using Web.Services.DTOs.Supplier;
@@ -10,8 +11,9 @@ public class InvoiceDto
     public string InvoiceNumber { get; set; }
     public DateTime IssueDate { get; set; }
     public DateTime DueDate { get; set; }
+    public decimal TotalPrice { get; set; }
     
     public CustomerDto Customer { get; set; }
     public SupplierDto Supplier { get; set; }
-    public List<InvoiceItemDto> InvoiceItem { get; set; }
+    public List<AttendeeDto> Attendee { get; set; }
 }

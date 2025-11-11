@@ -21,19 +21,19 @@ public class InvoiceItemController : ControllerBase
     public async Task<IActionResult> GetByIdAsync([FromRoute] int invoiceItemId)
     {
         var invoiceItem = await _invoiceItemService.GetByIdAsync(invoiceItemId);
-        if (invoiceItem == null)
-        {
+
+        if(invoiceItem == null) {
             return NotFound($"Invoice item with id {invoiceItemId} not found.");
         }
+
         return Ok(invoiceItem);
     }
-    
-    
-    [HttpPost]
+
+
+    [HttpPost("create-invoice-item")]
     public async Task<IActionResult> CreateAsync([FromBody] CreateInvoiceItemDto createInvoiceItemDto)
     {
         var result = await _invoiceItemService.AddAsync(createInvoiceItemDto);
         return CreatedAtAction("GetById", new { invoiceItemId = result.Id }, result);
     }
-    
 }

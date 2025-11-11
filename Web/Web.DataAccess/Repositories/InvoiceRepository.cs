@@ -16,19 +16,31 @@ public class InvoiceRepository : IInvoiceRepository
         _context = context;
     }
 
+    public async Task<int> GetAllSumAsync(DateTime date)
+    {
+        return await _context.Invoice.Where(i => i.IssueDate.Year == date.Year).CountAsync();
+    }
+
     public async Task<Invoice?> GetByIdAsync(int id)
     {
         var invoice = await _context.Invoice
-            .Include(i => i.Customer)
+            .Include(i => i.Customer).ThenInclude(c => c.Attendee).ThenInclude(a => a.InvoiceItem)
             .Include(i => i.Supplier)
-            .Include(i => i.InvoiceItem)
             .FirstOrDefaultAsync(x => x.Id == id);
-        
-        if (invoice != null)
-        {
-            invoice.InvoiceItem = invoice.InvoiceItem.OrderBy(ii => ii.Id).ToList();
-        }
 
         return invoice;
     }
+
+    public async Task AddAsync(Invoice invoice)
+    {
+        await _context.Invoice.AddAsync(invoice);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateAsync(Invoice invoice)
+    {
+        _context.Invoice.Update(invoice);
+        await _context.SaveChangesAsync();
+    }
+
 }

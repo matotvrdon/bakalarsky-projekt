@@ -14,11 +14,6 @@ public class InvoiceItemRepository : IInvoiceItemRepository
         _context = context;
     }
 
-    public async Task<List<InvoiceItem>> GetAllByInvoiceIdAsync(int invoiceId)
-    {
-        return await _context.InvoiceItem.Include(ii => ii.Invoice).Where(ii => ii.InvoiceId == invoiceId).ToListAsync();
-    }
-
     public async Task<InvoiceItem?> GetByIdAsync(int invoiceItemId)
     {
         return await _context.InvoiceItem.FirstOrDefaultAsync(x => x.Id == invoiceItemId);

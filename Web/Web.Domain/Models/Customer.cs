@@ -8,7 +8,11 @@ public class Customer
     public string City { get; set; }
     public string PostalCode { get; set; }
     public string Country { get; set; }
-    public string Ico { get; set; }
-    public string Dic { get; set; }
-    public string IcDph { get; set; }
+    public string? Ico { get; set; }
+    public string? Dic { get; set; }
+    public string? IcDph { get; set; }
+    
+    public int InvoiceId { get; set; }
+    public Invoice Invoice { get; set; }
+    public List<Attendee?> Attendee { get; set; }
 }

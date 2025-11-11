@@ -15,49 +15,24 @@ namespace Web.Services.Services
 {
     public class PdfService : IPdfService
     {
-        private readonly IHostEnvironment _env;
-        private readonly IMapper _mapper;
-        private readonly ISupplierService _supplierService;
-        private readonly ICustomerService _customerService;
-        private readonly IInvoiceItemService _invoiceItemService;
+        
         private readonly IInvoiceService _invoiceService;
 
-        public PdfService(IHostEnvironment env, IMapper mapper, ISupplierService supplierService,
-            ICustomerService customerService, IInvoiceItemService invoiceItemService, IInvoiceService invoiceService)
+        public PdfService(IInvoiceService invoiceService)
         {
-            _env = env;
-            _mapper = mapper;
-            _supplierService = supplierService;
-            _customerService = customerService;
-            _invoiceItemService = invoiceItemService;
             _invoiceService = invoiceService;
         }
+
 
         public async Task<byte[]> GeneratePdf(int invoiceId)
         {
             
             var invoiceDto = await _invoiceService.GetByIdAsync(invoiceId);
+
+            if(invoiceDto == null) 
+                throw new Exception($"Invoice with id {invoiceId} not found.");{
+            }
             
-            // ArgumentNullException.ThrowIfNull(createInvoiceDto);
-            //
-            // var invoiceDto = _mapper.Map<InvoiceDto>(createInvoiceDto);
-
-            // invoiceDto.SupplierDto = await _supplierService.GetByIdAsync(createInvoiceDto.SupplierDtoId)
-            //     ?? throw new InvalidOperationException($"Supplier with ID {createInvoiceDto.SupplierDtoId} not found.");
-            // invoiceDto.CustomerDto = await _customerService.GetByIdAsync(createInvoiceDto.CustomerDtoId)
-            //     ?? throw new InvalidOperationException($"Customer with ID {createInvoiceDto.CustomerDtoId} not found.");
-            // invoiceDto.SupplierDto = await _supplierService.GetByIdAsync(1)
-            //                          ?? throw new InvalidOperationException(
-            //                              $"Supplier with ID {createInvoiceDto.SupplierDtoId} not found.");
-            //
-            // invoiceDto.CustomerDto = await _customerService.GetByIdAsync(1)
-            //                          ?? throw new InvalidOperationException(
-            //                              $"Customer with ID {createInvoiceDto.CustomerDtoId} not found.");
-            //
-            // invoiceDto.InvoiceItems = await _invoiceItemService.GetAllByInvoiceIdAsync(2)
-            //                           ?? throw new InvalidOperationException(
-            //                               $"Invoice items for Invoice ID {invoiceDto.Id} not found.");
-
             using var ms = new MemoryStream();
 
             var document = Document.Create(document =>
@@ -75,7 +50,7 @@ namespace Web.Services.Services
                         .AlignRight()
                         .PaddingTop(5)
                         .PaddingRight(20)
-                        .Text("Invoice: 10/2025").FontSize(20);
+                        .Text($"Faktúra: {invoiceDto.InvoiceNumber}").FontSize(20);
 
 
                     page.Content()
@@ -379,37 +354,37 @@ namespace Web.Services.Services
                                         
                                         int itemNumber = 1;
 
-                                        foreach (var item in invoiceDto.InvoiceItem) {
-                                            table.Cell().Border(1).Element(c => c.Padding(2))
-                                                .AlignCenter()
-                                                .Text(itemNumber++.ToString());
-                                            table.Cell().Border(1).Element(c => c.Padding(2))
-                                                .Text(item.Name);
-                                            table.Cell().Border(1).Element(c => c.Padding(2))
-                                                .AlignCenter()
-                                                .Text(item.Unit);
-                                            table.Cell().Border(1).Element(c => c.Padding(2))
-                                                .AlignRight()
-                                                .Text(item.UnitPrice.ToString("F2", CultureInfo.InvariantCulture));
-                                            table.Cell().Border(1).Element(c => c.Padding(2))
-                                                .AlignRight()
-                                                .Text(item.Quantity.ToString("F2", CultureInfo.InvariantCulture));
-                                            table.Cell().Border(1).Element(c => c.Padding(2))
-                                                .AlignRight()
-                                                .Text(item.Price.ToString("F2", CultureInfo.InvariantCulture));
+                                        foreach (var attendee in invoiceDto.Customer.Attendee) 
+                                        {
+                                            foreach (var attendeeItems in attendee.InvoiceItem) 
+                                            {
+                                                table.Cell().Border(1).Element(c => c.Padding(2))
+                                                    .AlignCenter()
+                                                    .Text(itemNumber++.ToString());
+                                                table.Cell().Border(1).Element(c => c.Padding(2))
+                                                    .Text($"{attendee.FirstName} {attendee.LastName} - {attendeeItems.Name}");
+                                                table.Cell().Border(1).Element(c => c.Padding(2))
+                                                    .AlignCenter()
+                                                    .Text(attendeeItems.Unit);
+                                                table.Cell().Border(1).Element(c => c.Padding(2))
+                                                    .AlignRight()
+                                                    .Text(attendeeItems.UnitPrice.ToString("F2", CultureInfo.InvariantCulture));
+                                                table.Cell().Border(1).Element(c => c.Padding(2))
+                                                    .AlignRight()
+                                                    .Text(attendeeItems.Quantity.ToString("F2", CultureInfo.InvariantCulture));
+                                                table.Cell().Border(1).Element(c => c.Padding(2))
+                                                    .AlignRight()
+                                                    .Text(attendeeItems.Price.ToString("F2", CultureInfo.InvariantCulture));
+                                            }
                                         }
                                     });
+                                
                             });
 
+                            column.Item().Padding(10).Text($"Spolu = {invoiceDto.TotalPrice.ToString("F2", CultureInfo.InvariantCulture)} EUR").AlignRight().Bold();
+                            
                         });
-
-                    page.Footer()
-                        .Border(1)
-                        .Background(Colors.Grey.Lighten1)
-                        .Height(75)
-                        .AlignCenter()
-                        .AlignMiddle()
-                        .Text("Footer");
+                    
                 });
             });
 
