@@ -17,6 +17,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<Customer> Customer { get; set; }
     public DbSet<InvoiceItem> InvoiceItem { get; set; }
     public DbSet<Attendee> Attendee { get; set; }
+    public DbSet<Day> Day { get; set; }
+    public DbSet<Session> Session { get; set; }
+    public DbSet<Theme> Theme { get; set; }
+    public DbSet<Talk> Talk { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

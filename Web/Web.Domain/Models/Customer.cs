@@ -12,7 +12,5 @@ public class Customer
     public string? Dic { get; set; }
     public string? IcDph { get; set; }
     
-    public int InvoiceId { get; set; }
-    public Invoice Invoice { get; set; }
     public List<Attendee?> Attendee { get; set; }
 }
