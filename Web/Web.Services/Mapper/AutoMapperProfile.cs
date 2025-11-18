@@ -1,5 +1,6 @@
 using AutoMapper;
 using Web.Domain.Models;
+using Web.Services.DTOs.Attendee;
 using Web.Services.DTOs.Conference;
 using Web.Services.DTOs.Customer;
 using Web.Services.DTOs.Invoice;
@@ -21,5 +22,7 @@ public class AutoMapperProfile : Profile
         CreateMap<Customer, CustomerDto>().ReverseMap();
         CreateMap<InvoiceItem, InvoiceItemDto>().ReverseMap();
         CreateMap<CreateInvoiceItemDto, InvoiceItem>().ReverseMap();
+        CreateMap<Attendee, AttendeeDto>().ReverseMap();
+        CreateMap<Attendee, CreateAttendeeDto>().ReverseMap();
     }
 }

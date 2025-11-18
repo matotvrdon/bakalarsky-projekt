@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace Web.Domain.Models;
 
 public class InvoiceItem
@@ -10,6 +8,6 @@ public class InvoiceItem
     public decimal UnitPrice { get; set; }
     public decimal Quantity { get; set; }
     public decimal Price { get; set; }
-    public int InvoiceId { get; set; }
-    public Invoice Invoice { get; set; }
+    public int? AttendeeId { get; set; }
+    public Attendee? Attendee { get; set; }
 }
