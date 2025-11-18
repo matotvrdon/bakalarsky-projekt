@@ -17,13 +17,13 @@ public class ConferenceController : ControllerBase
     }
 
 
-    [HttpGet]
+    [HttpGet("get-all")]
     public async Task<IActionResult> GetAllAsync()
     {
         return Ok(await _repository.GetAllAsync());
     }
 
-    [HttpGet("{id:int}", Name = "GetConferenceById")]
+    [HttpGet("get-by-id/{id:int}", Name = "GetConferenceById")]
     public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
     {
         var conference = await _repository.GetByIdAsync(id);

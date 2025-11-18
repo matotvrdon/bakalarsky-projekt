@@ -17,6 +17,8 @@ public class CustomerRepository : ICustomerRepository
     public async Task<Customer?> GetByIdAsync(int id)
     {
         return await _context.Customer
+            .Include(c => c.Attendee)
+                .ThenInclude(a => a.InvoiceItem)
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 }

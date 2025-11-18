@@ -15,49 +15,27 @@ namespace Web.Services.Services
 {
     public class PdfService : IPdfService
     {
-        private readonly IHostEnvironment _env;
-        private readonly IMapper _mapper;
-        private readonly ISupplierService _supplierService;
-        private readonly ICustomerService _customerService;
-        private readonly IInvoiceItemService _invoiceItemService;
+        
         private readonly IInvoiceService _invoiceService;
+        private readonly IConferenceService _conferenceService;
 
-        public PdfService(IHostEnvironment env, IMapper mapper, ISupplierService supplierService,
-            ICustomerService customerService, IInvoiceItemService invoiceItemService, IInvoiceService invoiceService)
+        public PdfService(IInvoiceService invoiceService, IConferenceService conferenceService)
         {
-            _env = env;
-            _mapper = mapper;
-            _supplierService = supplierService;
-            _customerService = customerService;
-            _invoiceItemService = invoiceItemService;
             _invoiceService = invoiceService;
+            _conferenceService = conferenceService;
         }
+
 
         public async Task<byte[]> GeneratePdf(int invoiceId)
         {
             
             var invoiceDto = await _invoiceService.GetByIdAsync(invoiceId);
+
+            if (invoiceDto == null)
+            { 
+                throw new Exception($"Invoice with id {invoiceId} not found.");
+            }
             
-            // ArgumentNullException.ThrowIfNull(createInvoiceDto);
-            //
-            // var invoiceDto = _mapper.Map<InvoiceDto>(createInvoiceDto);
-
-            // invoiceDto.SupplierDto = await _supplierService.GetByIdAsync(createInvoiceDto.SupplierDtoId)
-            //     ?? throw new InvalidOperationException($"Supplier with ID {createInvoiceDto.SupplierDtoId} not found.");
-            // invoiceDto.CustomerDto = await _customerService.GetByIdAsync(createInvoiceDto.CustomerDtoId)
-            //     ?? throw new InvalidOperationException($"Customer with ID {createInvoiceDto.CustomerDtoId} not found.");
-            // invoiceDto.SupplierDto = await _supplierService.GetByIdAsync(1)
-            //                          ?? throw new InvalidOperationException(
-            //                              $"Supplier with ID {createInvoiceDto.SupplierDtoId} not found.");
-            //
-            // invoiceDto.CustomerDto = await _customerService.GetByIdAsync(1)
-            //                          ?? throw new InvalidOperationException(
-            //                              $"Customer with ID {createInvoiceDto.CustomerDtoId} not found.");
-            //
-            // invoiceDto.InvoiceItems = await _invoiceItemService.GetAllByInvoiceIdAsync(2)
-            //                           ?? throw new InvalidOperationException(
-            //                               $"Invoice items for Invoice ID {invoiceDto.Id} not found.");
-
             using var ms = new MemoryStream();
 
             var document = Document.Create(document =>
@@ -75,7 +53,7 @@ namespace Web.Services.Services
                         .AlignRight()
                         .PaddingTop(5)
                         .PaddingRight(20)
-                        .Text("Invoice: 10/2025").FontSize(20);
+                        .Text($"Faktúra: {invoiceDto.InvoiceNumber}").FontSize(20);
 
 
                     page.Content()
@@ -379,37 +357,37 @@ namespace Web.Services.Services
                                         
                                         int itemNumber = 1;
 
-                                        foreach (var item in invoiceDto.InvoiceItem) {
-                                            table.Cell().Border(1).Element(c => c.Padding(2))
-                                                .AlignCenter()
-                                                .Text(itemNumber++.ToString());
-                                            table.Cell().Border(1).Element(c => c.Padding(2))
-                                                .Text(item.Name);
-                                            table.Cell().Border(1).Element(c => c.Padding(2))
-                                                .AlignCenter()
-                                                .Text(item.Unit);
-                                            table.Cell().Border(1).Element(c => c.Padding(2))
-                                                .AlignRight()
-                                                .Text(item.UnitPrice.ToString("F2", CultureInfo.InvariantCulture));
-                                            table.Cell().Border(1).Element(c => c.Padding(2))
-                                                .AlignRight()
-                                                .Text(item.Quantity.ToString("F2", CultureInfo.InvariantCulture));
-                                            table.Cell().Border(1).Element(c => c.Padding(2))
-                                                .AlignRight()
-                                                .Text(item.Price.ToString("F2", CultureInfo.InvariantCulture));
+                                        foreach (var attendee in invoiceDto.Customer.Attendee) 
+                                        {
+                                            foreach (var attendeeItems in attendee.InvoiceItem) 
+                                            {
+                                                table.Cell().Border(1).Element(c => c.Padding(2))
+                                                    .AlignCenter()
+                                                    .Text(itemNumber++.ToString());
+                                                table.Cell().Border(1).Element(c => c.Padding(2))
+                                                    .Text($"{attendee.FirstName} {attendee.LastName} - {attendeeItems.Name}");
+                                                table.Cell().Border(1).Element(c => c.Padding(2))
+                                                    .AlignCenter()
+                                                    .Text(attendeeItems.Unit);
+                                                table.Cell().Border(1).Element(c => c.Padding(2))
+                                                    .AlignRight()
+                                                    .Text(attendeeItems.UnitPrice.ToString("F2", CultureInfo.InvariantCulture));
+                                                table.Cell().Border(1).Element(c => c.Padding(2))
+                                                    .AlignRight()
+                                                    .Text(attendeeItems.Quantity.ToString("F2", CultureInfo.InvariantCulture));
+                                                table.Cell().Border(1).Element(c => c.Padding(2))
+                                                    .AlignRight()
+                                                    .Text(attendeeItems.Price.ToString("F2", CultureInfo.InvariantCulture));
+                                            }
                                         }
                                     });
+                                
                             });
 
+                            column.Item().Padding(10).Text($"Spolu = {invoiceDto.TotalPrice.ToString("F2", CultureInfo.InvariantCulture)} EUR").AlignRight().Bold();
+                            
                         });
-
-                    page.Footer()
-                        .Border(1)
-                        .Background(Colors.Grey.Lighten1)
-                        .Height(75)
-                        .AlignCenter()
-                        .AlignMiddle()
-                        .Text("Footer");
+                    
                 });
             });
 
@@ -419,27 +397,112 @@ namespace Web.Services.Services
             return ms.ToArray();
         }
 
-        private static Task OpenPdfInCompanionAsync(byte[] pdfBytes, string fileName)
+        public async Task<byte[]> GenerateProgramPdf(int conferenceId)
         {
-            return Task.Run(() =>
+            var conferenceDto =  await _conferenceService.GetByIdAsync(conferenceId);
+
+            if (conferenceDto == null)
             {
-                try {
-                    var path = Path.Combine(Path.GetTempPath(), fileName);
-                    File.WriteAllBytes(path, pdfBytes);
+                throw new Exception($"Conference with id {conferenceId} not found.");
+            }
 
-                    var psi = new ProcessStartInfo {
-                        FileName = "open",
-                        Arguments = $"-a \"Quest PDF Companion\" \"{path}\"",
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    };
+            using var ms = new MemoryStream();
 
-                    Process.Start(psi);
-                }
-                catch {
-                    // ignore if app is not installed or launch fails
-                }
+            var document = Document.Create(document =>
+            {
+                document.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(1.5f, Unit.Centimetre);
+                    page.DefaultTextStyle(x => x.FontSize(11));
+
+                    page.Header()
+                        .Height(70)
+                        .Padding(10)
+                        .Column(column =>
+                        {
+                            column.Item().Text("Tu Bude Logo");
+                        });
+
+                    page.Content()
+                        .Padding(10)
+                        .Column(column =>
+                        {
+                            column.Spacing(12);
+
+                            foreach (var day in conferenceDto.Day)
+                            {
+                                // Day block
+                                column.Item().Border(1).Padding(8).Column(dayCol =>
+                                {
+                                    dayCol.Spacing(8);
+                                    dayCol.Item().Text(day.Date.ToString("dddd, MMMM dd, yyyy")).FontSize(18).Bold();
+
+                                    // Sessions for the day
+                                    foreach (var session in day.Session)
+                                    {
+                                        dayCol.Item().Border(1).Padding(6).Column(sessionCol =>
+                                        {
+                                            sessionCol.Spacing(6);
+                                            sessionCol.Item().Text((string)session.Title).FontSize(16).Bold();
+
+                                            foreach (var theme in session.Theme)
+                                            {
+                                                sessionCol.Item().PaddingLeft(6).Column(themeCol =>
+                                                {
+                                                    themeCol.Spacing(4);
+
+                                                    // theme header: time range + title + chair
+                                                    themeCol.Item().Row(row =>
+                                                    {
+                                                        row.ConstantItem(90).Text($"{theme.StartTime:hh.mm} — {theme.EndTime:hh.mm}").FontSize(12).SemiBold();
+                                                        row.RelativeItem().Column(c =>
+                                                        {
+                                                            c.Item().Text((string)theme.Title).FontSize(14).Bold();
+                                                            if (!string.IsNullOrWhiteSpace((string)theme.Chair))
+                                                            {
+                                                                c.Item().Text($"Chair: {(string)theme.Chair}").FontSize(11).Italic().FontColor(Colors.Grey.Darken2);
+                                                            }
+                                                        });
+                                                    });
+
+                                                    // Talks under theme
+                                                    foreach (var talk in theme.Talk)
+                                                    {
+                                                        themeCol.Item().PaddingLeft(12).Row(tRow =>
+                                                        {
+                                                            tRow.ConstantItem(70).Text($"{talk.StrartTime:hh.mm} — {talk.EndTime:hh.mm}").FontSize(11);
+                                                            tRow.RelativeItem().Column(tc =>
+                                                            {
+                                                                tc.Item().Text((string)talk.Title).FontSize(12).SemiBold();
+                                                                if (!string.IsNullOrWhiteSpace((string)talk.Content))
+                                                                    tc.Item().Text((string)talk.Content).FontSize(11).FontColor(Colors.Grey.Darken1);
+                                                            });
+                                                        });
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+
+                        });
+
+                    page.Footer()
+                        .AlignCenter()
+                        .Text(t =>
+                        {
+                            t.CurrentPageNumber();
+                        });
+                });
             });
+
+
+            document.GeneratePdf(ms);
+            await document.ShowInCompanionAsync();
+
+            return ms.ToArray();
         }
     }
 }

@@ -6,5 +6,5 @@ public class CreateInvoiceItemDto
     public string Unit { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal Quantity { get; set; }
-    public int InvoiceId { get; set; }
+    public int AttendeeId { get; set; }
 }

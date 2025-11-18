@@ -7,5 +7,5 @@ public class InvoiceItemDto
     public string Unit { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal Quantity { get; set; }
-    public decimal Price { get; set; }  
+    public decimal Price { get; set; } 
 }

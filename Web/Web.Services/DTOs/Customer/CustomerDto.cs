@@ -1,3 +1,6 @@
+using Web.Services.DTOs.Attendee;
+using Web.Services.DTOs.InvoiceItem;
+
 namespace Web.Services.DTOs.Customer;
 
 public class CustomerDto
@@ -11,4 +14,6 @@ public class CustomerDto
     public string Ico { get; set; }
     public string Dic { get; set; }
     public string IcDph { get; set; }
+    
+    public List<AttendeeDto> Attendee { get; set; }
 }
