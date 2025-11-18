@@ -17,10 +17,12 @@ namespace Web.Services.Services
     {
         
         private readonly IInvoiceService _invoiceService;
+        private readonly IConferenceService _conferenceService;
 
-        public PdfService(IInvoiceService invoiceService)
+        public PdfService(IInvoiceService invoiceService, IConferenceService conferenceService)
         {
             _invoiceService = invoiceService;
+            _conferenceService = conferenceService;
         }
 
 
@@ -29,8 +31,9 @@ namespace Web.Services.Services
             
             var invoiceDto = await _invoiceService.GetByIdAsync(invoiceId);
 
-            if(invoiceDto == null) 
-                throw new Exception($"Invoice with id {invoiceId} not found.");{
+            if (invoiceDto == null)
+            { 
+                throw new Exception($"Invoice with id {invoiceId} not found.");
             }
             
             using var ms = new MemoryStream();
@@ -394,27 +397,112 @@ namespace Web.Services.Services
             return ms.ToArray();
         }
 
-        private static Task OpenPdfInCompanionAsync(byte[] pdfBytes, string fileName)
+        public async Task<byte[]> GenerateProgramPdf(int conferenceId)
         {
-            return Task.Run(() =>
+            var conferenceDto =  await _conferenceService.GetByIdAsync(conferenceId);
+
+            if (conferenceDto == null)
             {
-                try {
-                    var path = Path.Combine(Path.GetTempPath(), fileName);
-                    File.WriteAllBytes(path, pdfBytes);
+                throw new Exception($"Conference with id {conferenceId} not found.");
+            }
 
-                    var psi = new ProcessStartInfo {
-                        FileName = "open",
-                        Arguments = $"-a \"Quest PDF Companion\" \"{path}\"",
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    };
+            using var ms = new MemoryStream();
 
-                    Process.Start(psi);
-                }
-                catch {
-                    // ignore if app is not installed or launch fails
-                }
+            var document = Document.Create(document =>
+            {
+                document.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(1.5f, Unit.Centimetre);
+                    page.DefaultTextStyle(x => x.FontSize(11));
+
+                    page.Header()
+                        .Height(70)
+                        .Padding(10)
+                        .Column(column =>
+                        {
+                            column.Item().Text("Tu Bude Logo");
+                        });
+
+                    page.Content()
+                        .Padding(10)
+                        .Column(column =>
+                        {
+                            column.Spacing(12);
+
+                            foreach (var day in conferenceDto.Day)
+                            {
+                                // Day block
+                                column.Item().Border(1).Padding(8).Column(dayCol =>
+                                {
+                                    dayCol.Spacing(8);
+                                    dayCol.Item().Text(day.Date.ToString("dddd, MMMM dd, yyyy")).FontSize(18).Bold();
+
+                                    // Sessions for the day
+                                    foreach (var session in day.Session)
+                                    {
+                                        dayCol.Item().Border(1).Padding(6).Column(sessionCol =>
+                                        {
+                                            sessionCol.Spacing(6);
+                                            sessionCol.Item().Text((string)session.Title).FontSize(16).Bold();
+
+                                            foreach (var theme in session.Theme)
+                                            {
+                                                sessionCol.Item().PaddingLeft(6).Column(themeCol =>
+                                                {
+                                                    themeCol.Spacing(4);
+
+                                                    // theme header: time range + title + chair
+                                                    themeCol.Item().Row(row =>
+                                                    {
+                                                        row.ConstantItem(90).Text($"{theme.StartTime:hh.mm} — {theme.EndTime:hh.mm}").FontSize(12).SemiBold();
+                                                        row.RelativeItem().Column(c =>
+                                                        {
+                                                            c.Item().Text((string)theme.Title).FontSize(14).Bold();
+                                                            if (!string.IsNullOrWhiteSpace((string)theme.Chair))
+                                                            {
+                                                                c.Item().Text($"Chair: {(string)theme.Chair}").FontSize(11).Italic().FontColor(Colors.Grey.Darken2);
+                                                            }
+                                                        });
+                                                    });
+
+                                                    // Talks under theme
+                                                    foreach (var talk in theme.Talk)
+                                                    {
+                                                        themeCol.Item().PaddingLeft(12).Row(tRow =>
+                                                        {
+                                                            tRow.ConstantItem(70).Text($"{talk.StrartTime:hh.mm} — {talk.EndTime:hh.mm}").FontSize(11);
+                                                            tRow.RelativeItem().Column(tc =>
+                                                            {
+                                                                tc.Item().Text((string)talk.Title).FontSize(12).SemiBold();
+                                                                if (!string.IsNullOrWhiteSpace((string)talk.Content))
+                                                                    tc.Item().Text((string)talk.Content).FontSize(11).FontColor(Colors.Grey.Darken1);
+                                                            });
+                                                        });
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+
+                        });
+
+                    page.Footer()
+                        .AlignCenter()
+                        .Text(t =>
+                        {
+                            t.CurrentPageNumber();
+                        });
+                });
             });
+
+
+            document.GeneratePdf(ms);
+            await document.ShowInCompanionAsync();
+
+            return ms.ToArray();
         }
     }
 }

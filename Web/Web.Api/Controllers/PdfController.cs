@@ -19,10 +19,17 @@ public class PdfController : ControllerBase
         _invoiceItemService = invoiceItemService;
     }
     
-    [HttpPost("create/{invoiceId}")]
+    [HttpPost("create-invoice/{invoiceId:int}")]
     public async Task<IActionResult> CreateInvoice([FromRoute] int invoiceId)
     {
         var pdf = await _pdfService.GeneratePdf(invoiceId);
         return File(pdf, "application/pdf", "invoice.pdf");
+    }
+
+    [HttpPost("create-program/{conferenceId:int}")]
+    public async Task<IActionResult> CreateProgram([FromRoute] int conferenceId)
+    {
+        var pdf = await _pdfService.GenerateProgramPdf(conferenceId);
+        return File(pdf, "application/pdf", "program.pdf");
     }
 }

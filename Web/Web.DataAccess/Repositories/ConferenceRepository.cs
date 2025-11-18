@@ -24,6 +24,10 @@ public class ConferenceRepository : IConferenceRepository
     public async Task<Conference?> GetByIdAsync(int id)
     {
         return await _context.Conference
+            .Include(c => c.Day)
+                .ThenInclude(d => d.Session)
+                    .ThenInclude(s => s.Theme)
+                        .ThenInclude(t => t.Talk)
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 

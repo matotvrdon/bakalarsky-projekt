@@ -1,3 +1,5 @@
+using Web.Services.DTOs.Day;
+
 namespace Web.Services.DTOs.Conference;
 
 public class ConferenceDto
@@ -6,4 +8,6 @@ public class ConferenceDto
     public string Name { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
+
+    public List<DayDto> Day { get; set; }
 }
