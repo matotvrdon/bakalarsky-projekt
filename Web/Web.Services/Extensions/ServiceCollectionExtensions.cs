@@ -28,6 +28,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICustomerService, CustomerService>();
         services.AddScoped<IInvoiceItemService, InvoiceItemService>();
         services.AddScoped<IAttendeeService, AttendeeService>();
+        services.AddScoped<IDayService, DayService>();
+        services.AddScoped<ISessionService, SessionService>();
+        services.AddScoped<IThemeService, ThemeService>();
+        services.AddScoped<ITalkService, TalkService>();
         
         QuestPDF.Settings.License = LicenseType.Community;
 

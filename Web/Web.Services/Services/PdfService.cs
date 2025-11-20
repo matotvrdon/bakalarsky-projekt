@@ -416,68 +416,87 @@ namespace Web.Services.Services
                     page.Margin(1.5f, Unit.Centimetre);
                     page.DefaultTextStyle(x => x.FontSize(11));
 
-                    page.Header()
-                        .Height(70)
-                        .Padding(10)
-                        .Column(column =>
-                        {
-                            column.Item().Text("Tu Bude Logo");
-                        });
+                    page.Header().Row(row =>
+                    {
+                        row.RelativeItem();
+                        row.ConstantItem(60).Image("Assets/logo.png");
+                    });
 
                     page.Content()
-                        .Padding(10)
-                        .Column(column =>
+                        .Padding(20)
+                        .Column(dayColumn =>
                         {
-                            column.Spacing(12);
+                            dayColumn.Spacing(35);
 
                             foreach (var day in conferenceDto.Day)
                             {
-                                // Day block
-                                column.Item().Border(1).Padding(8).Column(dayCol =>
+                                dayColumn.Item().Text(day.Date.ToString("dddd, MMMM dd, yyyy"))
+                                    .FontSize(22)
+                                    .Bold();
+                                
+                                dayColumn.Item().Column(sessionColumn =>
                                 {
-                                    dayCol.Spacing(8);
-                                    dayCol.Item().Text(day.Date.ToString("dddd, MMMM dd, yyyy")).FontSize(18).Bold();
+                                    sessionColumn.Spacing(25);
 
-                                    // Sessions for the day
                                     foreach (var session in day.Session)
                                     {
-                                        dayCol.Item().Border(1).Padding(6).Column(sessionCol =>
+                                        sessionColumn.Item().Text(session.Title)
+                                            .FontSize(16)
+                                            .Bold();
+                                        
+                                        sessionColumn.Item().Column(themeColumn =>
                                         {
-                                            sessionCol.Spacing(6);
-                                            sessionCol.Item().Text((string)session.Title).FontSize(16).Bold();
+                                            themeColumn.Spacing(15);
 
                                             foreach (var theme in session.Theme)
                                             {
-                                                sessionCol.Item().PaddingLeft(6).Column(themeCol =>
+                                                themeColumn.Item().Row(row =>
                                                 {
-                                                    themeCol.Spacing(4);
+                                                    row.ConstantItem(110)
+                                                        .Text($"{theme.StartTime:HH:mm}–{theme.EndTime:HH:mm}")
+                                                        .FontSize(11)
+                                                        .Bold();
 
-                                                    // theme header: time range + title + chair
-                                                    themeCol.Item().Row(row =>
+                                                    row.RelativeItem().Column(themeColumn =>
                                                     {
-                                                        row.ConstantItem(90).Text($"{theme.StartTime:hh.mm} — {theme.EndTime:hh.mm}").FontSize(12).SemiBold();
-                                                        row.RelativeItem().Column(c =>
-                                                        {
-                                                            c.Item().Text((string)theme.Title).FontSize(14).Bold();
-                                                            if (!string.IsNullOrWhiteSpace((string)theme.Chair))
-                                                            {
-                                                                c.Item().Text($"Chair: {(string)theme.Chair}").FontSize(11).Italic().FontColor(Colors.Grey.Darken2);
-                                                            }
-                                                        });
-                                                    });
+                                                        themeColumn.Spacing(2);
+                                                        themeColumn.Item().Text(theme.Title)
+                                                            .FontSize(14)
+                                                            .SemiBold();
 
-                                                    // Talks under theme
+                                                        if (!string.IsNullOrWhiteSpace(theme.Chair))
+                                                        {
+                                                            themeColumn.Item().Text($"Chair: {theme.Chair}")
+                                                                .FontSize(11);
+                                                        }
+                                                    });
+                                                });
+                                                
+                                                themeColumn.Item().Column(talkColumn =>
+                                                {
+                                                    talkColumn.Spacing(8);
                                                     foreach (var talk in theme.Talk)
                                                     {
-                                                        themeCol.Item().PaddingLeft(12).Row(tRow =>
+                                                        talkColumn.Item().Row(talkRow =>
                                                         {
-                                                            tRow.ConstantItem(70).Text($"{talk.StrartTime:hh.mm} — {talk.EndTime:hh.mm}").FontSize(11);
-                                                            tRow.RelativeItem().Column(tc =>
-                                                            {
-                                                                tc.Item().Text((string)talk.Title).FontSize(12).SemiBold();
-                                                                if (!string.IsNullOrWhiteSpace((string)talk.Content))
-                                                                    tc.Item().Text((string)talk.Content).FontSize(11).FontColor(Colors.Grey.Darken1);
-                                                            });
+                                                            talkRow.ConstantItem(110)
+                                                                .Text($"{talk.StrartTime:HH:mm}–{talk.EndTime:HH:mm}")
+                                                                .FontSize(11);
+
+                                                            talkRow.RelativeItem()
+                                                                .Column(tc =>
+                                                                {
+                                                                    tc.Spacing(2);
+                                                                    tc.Item().Text(talk.Title)
+                                                                        .FontSize(12)
+                                                                        .SemiBold();
+
+                                                                    if (!string.IsNullOrWhiteSpace(talk.Content))
+                                                                    {
+                                                                        tc.Item().Text(talk.Content)
+                                                                            .FontSize(11);
+                                                                    }
+                                                                });
                                                         });
                                                     }
                                                 });
@@ -486,7 +505,6 @@ namespace Web.Services.Services
                                     }
                                 });
                             }
-
                         });
 
                     page.Footer()

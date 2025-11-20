@@ -7,8 +7,7 @@ public class DayDto
 {
     public int Id { get; set; }
     public DateTime Date { get; set; }
-
-
+    
     public int ConferenceId { get; set; }
     public ConferenceDto Conference { get; set; }
 
