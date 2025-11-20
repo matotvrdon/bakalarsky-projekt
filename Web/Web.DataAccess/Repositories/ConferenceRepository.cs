@@ -24,10 +24,10 @@ public class ConferenceRepository : IConferenceRepository
     public async Task<Conference?> GetByIdAsync(int id)
     {
         return await _context.Conference
-            .Include(c => c.Day)
-                .ThenInclude(d => d.Session)
-                    .ThenInclude(s => s.Theme)
-                        .ThenInclude(t => t.Talk)
+            .Include(c => c.Day.OrderBy(d => d.Date))
+                .ThenInclude(d => d.Session.OrderBy(s => s.Title))
+                    .ThenInclude(s => s.Theme.OrderBy(t => t.StartTime))
+                        .ThenInclude(t => t.Talk.OrderBy(tk => tk.StrartTime))
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 

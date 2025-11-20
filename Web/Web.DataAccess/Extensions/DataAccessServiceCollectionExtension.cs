@@ -18,6 +18,10 @@ public static class DataAccessServiceCollectionExtension
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IInvoiceItemRepository, InvoiceItemRepository>();
         services.AddScoped<IAttendeeRepository, AttendeeRepository>();
+        services.AddScoped<IDayRepository, DayRepository>();
+        services.AddScoped<ISessionRepository, SessionRepository>();
+        services.AddScoped<IThemeRepository, ThemeRepository>();
+        services.AddScoped<ITalkRepository, TalkRepository>();
         
         return services;
     }
