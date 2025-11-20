@@ -39,4 +39,17 @@ public class DayRepository : IDayRepository
         await _context.Day.AddAsync(day);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<bool> DeleteAsync(int dayId)
+    {
+        var entity = await _context.Day.FirstOrDefaultAsync(x => x.Id == dayId);
+        if (entity == null)
+        {
+            return false;
+        }
+
+        _context.Day.Remove(entity);
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }
