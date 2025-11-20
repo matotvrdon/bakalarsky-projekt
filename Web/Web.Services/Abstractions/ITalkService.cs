@@ -1,6 +1,10 @@
+using Web.Services.DTOs.Talk;
+
 namespace Web.Services.Abstractions;
 
 public interface ITalkService
 {
-    //TODO: Add method signatures for talk service
+    Task<List<TalkDto>> GetAllByThemeIdAsync(int themeId);
+    Task<TalkDto?> GetByTalkIdAsync(int talkId);
+    Task<TalkDto> AddAsync(CreateTalkDto createTalkDto);
 }

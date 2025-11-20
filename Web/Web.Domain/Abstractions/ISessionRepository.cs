@@ -1,6 +1,10 @@
+using Web.Domain.Models;
+
 namespace Web.Domain.Abstractions;
 
 public interface ISessionRepository
 {
-    //TODO: Add method signatures for session repository
+    Task<List<Session>> GetAllByDayIdAsync(int dayId);
+    Task<Session?> GetBySessionIdAsync(int sessionId);
+    Task AddAsync(Session session);
 }

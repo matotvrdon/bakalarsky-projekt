@@ -1,6 +1,10 @@
+using Web.Domain.Models;
+
 namespace Web.Domain.Abstractions;
 
 public interface ITalkRepository
 {
-    //TODO: Add method signatures for talk repository
+    Task<List<Talk>> GetAllByThemeIdAsync(int themeId);
+    Task<Talk?> GetByTalkIdAsync(int talkId);
+    Task AddAsync(Talk talk);
 }
