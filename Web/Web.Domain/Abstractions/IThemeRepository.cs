@@ -1,6 +1,10 @@
+using Web.Domain.Models;
+
 namespace Web.Domain.Abstractions;
 
 public interface IThemeRepository
 {
-    //TODO: Add method signatures for theme repository
+    Task<List<Theme>> GetAllBySessionIdAsync(int sessionId);
+    Task<Theme?> GetByThemeIdAsync(int themeId);
+    Task AddAsync(Theme theme);
 }

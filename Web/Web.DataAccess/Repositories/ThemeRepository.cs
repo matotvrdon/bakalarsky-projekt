@@ -1,8 +1,37 @@
+using Microsoft.EntityFrameworkCore;
+using Web.DataAccess.Data;
 using Web.Domain.Abstractions;
+using Web.Domain.Models;
 
 namespace Web.DataAccess.Repositories;
 
 public class ThemeRepository : IThemeRepository
 {
-    //TODO: Implement methods for theme repository
+    private readonly ApplicationDbContext _context;
+
+    public ThemeRepository(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<List<Theme>> GetAllBySessionIdAsync(int sessionId)
+    {
+        return await _context.Theme
+            .Include(t => t.Talk)
+            .Where(t => t.SessionId == sessionId)
+            .ToListAsync();
+    }
+
+    public async Task<Theme?> GetByThemeIdAsync(int themeId)
+    {
+        return await _context.Theme
+            .Include(t => t.Talk)
+            .FirstOrDefaultAsync(x => x.Id == themeId);
+    }
+
+    public async Task AddAsync(Theme theme)
+    {
+        await _context.Theme.AddAsync(theme);
+        await _context.SaveChangesAsync();
+    }
 }

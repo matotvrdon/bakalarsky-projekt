@@ -480,7 +480,7 @@ namespace Web.Services.Services
                                                         talkColumn.Item().Row(talkRow =>
                                                         {
                                                             talkRow.ConstantItem(110)
-                                                                .Text($"{talk.StrartTime:HH:mm}–{talk.EndTime:HH:mm}")
+                                                                .Text($"{talk.StartTime:HH:mm}–{talk.EndTime:HH:mm}")
                                                                 .FontSize(11);
 
                                                             talkRow.RelativeItem()

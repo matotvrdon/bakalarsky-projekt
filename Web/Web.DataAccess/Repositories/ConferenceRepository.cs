@@ -23,12 +23,17 @@ public class ConferenceRepository : IConferenceRepository
 
     public async Task<Conference?> GetByIdAsync(int id)
     {
-        return await _context.Conference
-            .Include(c => c.Day.OrderBy(d => d.Date))
-                .ThenInclude(d => d.Session.OrderBy(s => s.Title))
-                    .ThenInclude(s => s.Theme.OrderBy(t => t.StartTime))
-                        .ThenInclude(t => t.Talk.OrderBy(tk => tk.StrartTime))
+        var conference = await _context.Conference
+            .Include(c => c.Day)
+                .ThenInclude(d => d.Session)
+                    .ThenInclude(s => s.Theme)
+                        .ThenInclude(t => t.Talk)
             .FirstOrDefaultAsync(x => x.Id == id);
+        
+        if (conference == null) return null;
+        
+        OrderConference(conference);
+        return conference;
     }
 
     public async Task AddAsync(Conference conference)
@@ -48,5 +53,25 @@ public class ConferenceRepository : IConferenceRepository
         _context.Conference.Remove(entity);
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    private void OrderConference(Conference conference)
+    {
+
+        conference.Day = conference.Day.OrderBy(d => d.Date).ToList();
+
+        foreach (var day in conference.Day)
+        {
+            day.Session = day.Session.OrderBy(s => s.Title).ToList();
+            foreach (var session in day.Session)
+            {
+                session.Theme = session.Theme.OrderBy(t => t.StartTime).ToList();
+                foreach (var theme in session.Theme)
+                {
+                    theme.Talk = theme.Talk.OrderBy(tk => tk.StartTime).ToList();
+                }
+            }  
+        }
+        
     }
 }

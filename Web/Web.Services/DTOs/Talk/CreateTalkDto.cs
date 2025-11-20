@@ -1,15 +1,11 @@
-﻿using Web.Services.DTOs.Theme;
-
 namespace Web.Services.DTOs.Talk;
 
-public class TalkDto
+public class CreateTalkDto
 {
-    public int Id { get; set; }
     public string Title { get; set; }
     public string Content { get; set; }
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
     
     public int ThemeId { get; set; }
-    public ThemeDto Theme { get; set; }
 }
