@@ -42,4 +42,29 @@ public class DayController : ControllerBase
         var result = await _dayService.AddAsync(createDayDto);
         return CreatedAtAction("GetDayById", new { dayId = result.Id }, result);
     }
+
+    [HttpPut("update-day", Name = "UpdateDay")]
+    public async Task<IActionResult> UpdateDayAsync([FromBody] UpdateDayDto updateDayDto)
+    {
+        var updatedDay = await _dayService.UpdateAsync(updateDayDto);
+
+        if(updatedDay == null)
+        {
+            return NotFound($"Day with id {updateDayDto.Id} not found.");
+        }
+
+        return Ok(updatedDay);
+    }
+
+    [HttpDelete("delete-day/{dayId:int}", Name = "DeleteDay")]
+    public async Task<IActionResult> DeleteDayAsync([FromRoute] int dayId)
+    {
+        var isDeleted = await _dayService.DeleteAsync(dayId);
+
+        if(!isDeleted) {
+            return NotFound($"Day with id {dayId} not found.");
+        }
+
+        return NoContent();
+    }
 }

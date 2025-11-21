@@ -33,6 +33,28 @@ public class DayService : IDayService
     {
         var day = _mapper.Map<Day>(createDayDto);
         await _dayRepository.AddAsync(day);
+        
         return _mapper.Map<DayDto>(day);
+    }
+
+    public async Task<DayDto?> UpdateAsync(UpdateDayDto updateDayDto)
+    {
+        var day =  await _dayRepository.GetByDayIdAsync(updateDayDto.Id);
+        
+        if (day == null)
+        {
+            return null;
+        }
+        
+        day.Date = updateDayDto.Date;
+        
+        await _dayRepository.UpdateAsync(day);
+        
+        return _mapper.Map<DayDto?>(day);
+    }
+
+    public async Task<bool> DeleteAsync(int dayId)
+    {
+        return await _dayRepository.DeleteAsync(dayId);
     }
 }

@@ -7,4 +7,6 @@ public interface ITalkRepository
     Task<List<Talk>> GetAllByThemeIdAsync(int themeId);
     Task<Talk?> GetByTalkIdAsync(int talkId);
     Task AddAsync(Talk talk);
+    Task UpdateAsync(Talk talk);
+    Task<bool> DeleteAsync(int talkId);
 }

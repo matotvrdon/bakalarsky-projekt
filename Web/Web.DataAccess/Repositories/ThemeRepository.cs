@@ -34,4 +34,23 @@ public class ThemeRepository : IThemeRepository
         await _context.Theme.AddAsync(theme);
         await _context.SaveChangesAsync();
     }
+
+    public async Task UpdateAsync(Theme theme)
+    {
+        _context.Theme.Update(theme);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<bool> DeleteAsync(int themeId)
+    {
+        var theme = await _context.Theme.FirstOrDefaultAsync(x => x.Id == themeId);
+        if (theme == null)
+        {
+            return false;
+        }
+
+        _context.Theme.Remove(theme);
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }

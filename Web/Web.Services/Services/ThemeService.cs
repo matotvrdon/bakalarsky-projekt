@@ -34,4 +34,29 @@ public class ThemeService : IThemeService
         await _themeRepository.AddAsync(theme);
         return _mapper.Map<ThemeDto>(theme);
     }
+
+    public async Task<ThemeDto?> UpdateAsync(UpdateThemeDto updateThemeDto)
+    {
+        var theme = await _themeRepository.GetByThemeIdAsync(updateThemeDto.Id);
+        
+        if (theme == null)
+        {
+            return null;
+        }
+        
+        theme.Title = updateThemeDto.Title;
+        theme.StartTime = updateThemeDto.StartTime;
+        theme.EndTime = updateThemeDto.EndTime;
+        theme.Chair = updateThemeDto.Chair;
+        
+        await _themeRepository.UpdateAsync(theme);
+        
+        return _mapper.Map<ThemeDto?>(theme);
+        
+    }
+
+    public async Task<bool> DeleteAsync(int themeId)
+    {
+        return await _themeRepository.DeleteAsync(themeId);
+    }
 }

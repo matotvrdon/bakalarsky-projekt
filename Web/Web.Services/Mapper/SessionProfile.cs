@@ -10,5 +10,6 @@ public class SessionProfile : Profile
     {
         CreateMap<Session, SessionDto>().ReverseMap();
         CreateMap<Session, CreateSessionDto>().ReverseMap();
+        CreateMap<Session, UpdateSessionDto>().ReverseMap();
     }
 }

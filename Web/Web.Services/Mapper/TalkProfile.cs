@@ -10,5 +10,6 @@ public class TalkProfile : Profile
     {
         CreateMap<Talk, TalkDto>().ReverseMap();
         CreateMap<Talk, CreateTalkDto>().ReverseMap();
+        CreateMap<Talk, UpdateTalkDto>().ReverseMap();
     }
 }

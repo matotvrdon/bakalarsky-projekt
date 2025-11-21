@@ -41,4 +41,28 @@ public class TalkController : ControllerBase
         var result = await _talkService.AddAsync(createTalkDto);
         return CreatedAtAction("GetTalkById", new { talkId = result.Id }, result);
     }
+
+    [HttpPut("update-talk", Name = "UpdateTalk")]
+    public async Task<IActionResult> UpdateTalkAsync([FromBody] UpdateTalkDto updateTalkDto)
+    {
+        var updatedTalk = await _talkService.UpdateAsync(updateTalkDto);
+
+        if(updatedTalk == null) {
+            return NotFound($"Talk with id {updateTalkDto.Id} not found.");
+        }
+
+        return Ok(updatedTalk);
+    }
+
+    [HttpDelete("delete-talk/{talkId}", Name = "DeleteTalk")]
+    public async Task<IActionResult> DeleteTalkAsync([FromRoute] int talkId)
+    {
+        var isDeleted = await _talkService.DeleteAsync(talkId);
+
+        if(!isDeleted) {
+            return NotFound($"Talk with id {talkId} not found.");
+        }
+
+        return NoContent();
+    }
 }

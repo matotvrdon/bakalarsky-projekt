@@ -35,4 +35,27 @@ public class SessionService : ISessionService
         await _sessionRepository.AddAsync(session);
         return _mapper.Map<SessionDto>(session);
     }
+
+    public async Task<SessionDto?> UpdateAsync(UpdateSessionDto updateSessionDto)
+    {
+        var session = await _sessionRepository.GetBySessionIdAsync(updateSessionDto.Id);
+
+        if(session == null) 
+        {
+            return null;    
+        }
+        
+        session.Title = updateSessionDto.Title;
+        session.StartTime = updateSessionDto.StartTime;
+        session.EndTime = updateSessionDto.EndTime;
+        
+        await _sessionRepository.UpdateAsync(session);
+        
+        return _mapper.Map<SessionDto?>(session);
+    }
+
+    public async Task<bool> DeleteAsync(int sessionId)
+    {
+        return await _sessionRepository.DeleteAsync(sessionId);
+    }
 }

@@ -36,4 +36,23 @@ public class SessionRepository : ISessionRepository
         await _context.Session.AddAsync(session);
         await _context.SaveChangesAsync();
     }
+
+    public async Task UpdateAsync(Session session)
+    {
+        _context.Session.Update(session);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<bool> DeleteAsync(int sessionId)
+    {
+        var session = await _context.Session.FirstOrDefaultAsync(x => x.Id == sessionId);
+
+        if(session == null) 
+        {
+            return false;    
+        }
+        _context.Session.Remove(session);
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }

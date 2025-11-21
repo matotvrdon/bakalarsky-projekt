@@ -42,4 +42,30 @@ public class ThemeController : ControllerBase
         var result = await _themeService.AddAsync(createThemeDto);
         return CreatedAtAction("GetThemeById", new { themeId = result.Id }, result);
     }
+
+    [HttpPut("update-theme", Name = "UpdateTheme")]
+    public async Task<IActionResult> UpdateThemeAsync([FromBody] UpdateThemeDto updateThemeDto)
+    {
+        var updatedTheme = await _themeService.UpdateAsync(updateThemeDto);
+
+        if(updatedTheme == null) 
+        {
+            return NotFound($"Theme with id {updateThemeDto.Id} not found.");
+        }
+
+        return Ok(updatedTheme);
+    }
+    
+    [HttpDelete("delete-theme/{themeId:int}", Name = "DeleteTheme")]
+    public async Task<IActionResult> DeleteThemeAsync([FromRoute] int themeId)
+    {
+        var isDeleted =  await _themeService.DeleteAsync(themeId);
+
+        if(!isDeleted)
+        {
+            return NotFound($"Theme with id {themeId} not found.");
+        }
+
+        return NoContent();
+    }
 }

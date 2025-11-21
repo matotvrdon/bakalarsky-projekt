@@ -42,4 +42,29 @@ public class SessionController : ControllerBase
         var result = await _sessionService.AddAsync(createSessionDto);
         return CreatedAtAction("GetSessionById", new { sessionId = result.Id }, result);
     }
+
+    [HttpPut("update-session", Name = "UpdateSession")]
+    public async Task<IActionResult> UpdateSessionAsync([FromBody] UpdateSessionDto updateSessionDto)
+    {
+        var updatedSession = await _sessionService.UpdateAsync(updateSessionDto);
+        
+        if(updatedSession == null) {
+            return NotFound($"Session with id {updateSessionDto.Id} not found.");
+        }
+        
+        return Ok(updatedSession);
+    }
+
+    [HttpDelete("delete-session/{sessionId:int}", Name = "DeleteSession")]
+    public async Task<IActionResult> DeleteSessionAsync([FromRoute] int sessionId)
+    {
+        var isDeleted = await _sessionService.DeleteAsync(sessionId);
+        
+        if(!isDeleted) 
+        {
+            return NotFound($"Session with id {sessionId} not found.");
+        }
+        
+        return NoContent();
+    }
 }
