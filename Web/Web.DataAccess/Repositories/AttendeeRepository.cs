@@ -39,10 +39,10 @@ public class AttendeeRepository : IAttendeeRepository
         await _context.SaveChangesAsync();
     }
 
-    public Task UpdateAsync(Attendee attendee)
+    public async Task UpdateAsync(Attendee attendee)
     {
         _context.Attendee.Update(attendee);
-        return _context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
     }
 
     public async Task<Attendee?> GetAttendeeByIdAsync(int id)

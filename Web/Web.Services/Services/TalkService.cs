@@ -35,4 +35,28 @@ public class TalkService : ITalkService
         await _talkRepository.AddAsync(talk);
         return _mapper.Map<TalkDto>(talk);
     }
+
+    public async Task<TalkDto?> UpdateAsync(UpdateTalkDto updateTalkDto)
+    {
+        var talk = await _talkRepository.GetByTalkIdAsync(updateTalkDto.Id);
+        
+        if (talk == null)
+        {
+            return null;
+        }
+        
+        talk.Title = updateTalkDto.Title;
+        talk.Content = updateTalkDto.Content;
+        talk.StartTime = updateTalkDto.StartTime;
+        talk.EndTime = updateTalkDto.EndTime;
+        
+        await _talkRepository.UpdateAsync(talk);
+        
+        return _mapper.Map<TalkDto?>(talk);
+    }
+
+    public async Task<bool> DeleteAsync(int talkId)
+    {
+        return await _talkRepository.DeleteAsync(talkId);
+    }
 }

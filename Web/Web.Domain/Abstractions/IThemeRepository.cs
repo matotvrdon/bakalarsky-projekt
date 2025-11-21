@@ -7,4 +7,6 @@ public interface IThemeRepository
     Task<List<Theme>> GetAllBySessionIdAsync(int sessionId);
     Task<Theme?> GetByThemeIdAsync(int themeId);
     Task AddAsync(Theme theme);
+    Task UpdateAsync(Theme theme);
+    Task<bool> DeleteAsync(int themeId);
 }

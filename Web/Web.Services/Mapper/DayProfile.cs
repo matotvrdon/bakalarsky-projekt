@@ -10,5 +10,6 @@ public class DayProfile : Profile
     {
         CreateMap<Day, DayDto>().ReverseMap();
         CreateMap<Day, CreateDayDto>().ReverseMap();
+        CreateMap<Day, UpdateDayDto>().ReverseMap();
     }
 }

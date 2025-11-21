@@ -10,5 +10,6 @@ public class ThemeProfile : Profile
     {
         CreateMap<Theme, ThemeDto>().ReverseMap();
         CreateMap<Theme, CreateThemeDto>().ReverseMap();
+        CreateMap<Theme, UpdateThemeDto>().ReverseMap();
     }
 }

@@ -32,4 +32,23 @@ public class TalkRepository : ITalkRepository
         await _context.Talk.AddAsync(talk);
         await _context.SaveChangesAsync();
     }
+
+    public async Task UpdateAsync(Talk talk)
+    {
+        _context.Talk.Update(talk);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<bool> DeleteAsync(int talkId)
+    {
+        var talk = await _context.Talk.FirstOrDefaultAsync(x => x.Id == talkId);
+        if (talk == null)
+        {
+            return false;
+        }
+
+        _context.Talk.Remove(talk);
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }

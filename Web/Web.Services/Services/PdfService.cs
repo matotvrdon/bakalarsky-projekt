@@ -206,7 +206,7 @@ namespace Web.Services.Services
                                         column.Item().Text(t =>
                                         {
                                             t.Span("Vystavil: ").Bold();
-                                            // TODO: replace with actual user name
+                                            //TODO: replace with actual user name
                                             t.Span(Environment.MachineName);
                                         });
                                     });
