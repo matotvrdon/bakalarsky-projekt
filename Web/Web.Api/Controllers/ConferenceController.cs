@@ -9,6 +9,7 @@ namespace Web.Api.Controllers;
 public class ConferenceController : ControllerBase
 {
     
+    
     private readonly IConferenceService _repository;
 
     public ConferenceController(IConferenceService repository)
