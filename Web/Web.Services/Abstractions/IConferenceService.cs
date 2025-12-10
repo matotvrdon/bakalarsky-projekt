@@ -1,3 +1,5 @@
+using System.Net.ServerSentEvents;
+using System.Runtime.CompilerServices;
 using Web.Services.DTOs.Conference;
 
 namespace Web.Services.Abstractions;

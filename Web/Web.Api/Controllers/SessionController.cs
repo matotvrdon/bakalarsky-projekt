@@ -48,7 +48,8 @@ public class SessionController : ControllerBase
     {
         var updatedSession = await _sessionService.UpdateAsync(updateSessionDto);
         
-        if(updatedSession == null) {
+        if(updatedSession == null)
+        {
             return NotFound($"Session with id {updateSessionDto.Id} not found.");
         }
         

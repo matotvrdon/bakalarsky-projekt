@@ -21,6 +21,8 @@ public static class ServiceCollectionExtensions
         services.AddAutoMapper(typeof(TalkProfile));
         services.AddAutoMapper(typeof(ThemeProfile));
 
+        services.AddSingleton<IEventPublisherService, EventPublisherService>();
+
         services.AddScoped<IConferenceService, ConferenceService>();
         services.AddScoped<IInvoiceService, InvoiceService>();
         services.AddScoped<IPdfService, PdfService>();

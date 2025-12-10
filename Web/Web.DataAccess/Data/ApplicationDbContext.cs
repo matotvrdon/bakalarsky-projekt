@@ -8,7 +8,6 @@ public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
-        // triggers are configured in OnModelCreating using Laraue
     }
     
     public DbSet<Conference> Conference { get; set; }

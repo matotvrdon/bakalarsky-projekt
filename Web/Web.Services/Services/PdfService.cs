@@ -518,7 +518,7 @@ namespace Web.Services.Services
 
 
             document.GeneratePdf(ms);
-            await document.ShowInCompanionAsync();
+            // await document.ShowInCompanionAsync();
 
             return ms.ToArray();
         }

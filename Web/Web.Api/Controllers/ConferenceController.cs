@@ -9,25 +9,26 @@ namespace Web.Api.Controllers;
 public class ConferenceController : ControllerBase
 {
     
-    
-    private readonly IConferenceService _repository;
+    private readonly IConferenceService _confererenceService;
+    private readonly IEventPublisherService _eventPublisherService;
 
-    public ConferenceController(IConferenceService repository)
+    public ConferenceController(IConferenceService conferenceService, IEventPublisherService eventPublisherService)
     {
-        _repository = repository;
+        _confererenceService = conferenceService;
+        _eventPublisherService = eventPublisherService;
     }
 
 
     [HttpGet("get-all")]
     public async Task<IActionResult> GetAllAsync()
     {
-        return Ok(await _repository.GetAllAsync());
+        return Ok(await _confererenceService.GetAllAsync());
     }
 
     [HttpGet("get-by-id/{id:int}", Name = "GetConferenceById")]
     public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
     {
-        var conference = await _repository.GetByIdAsync(id);
+        var conference = await _confererenceService.GetByIdAsync(id);
         if (conference == null)
         {
             return NotFound($"Conference with id {id} not found.");
@@ -38,14 +39,17 @@ public class ConferenceController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> AddAsync([FromBody] CreateConferenceDto createConferenceDto)
     {
-        var result = await _repository.AddAsync(createConferenceDto);
+        var result = await _confererenceService.AddAsync(createConferenceDto);
+        
+        _eventPublisherService.PublishConferenceAdded(result);
+        
         return CreatedAtAction("GetById", new { id = result.Id }, result);
     }
     
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteAsync([FromRoute] int id)
     {
-        var result =  await _repository.DeleteAsync(id);
+        var result =  await _confererenceService.DeleteAsync(id);
         if(!result)
         {
             return NotFound($"Conference with id {id} not found.");
@@ -54,4 +58,12 @@ public class ConferenceController : ControllerBase
         return NoContent();
     }
     
+    
+    [HttpGet("subscribe-to-events")]
+    public IResult StreamUpdates(CancellationToken cancellationToken)
+    {
+        var eventStream = _eventPublisherService.SubscribeToConferenceEvents(cancellationToken);
+        
+        return TypedResults.ServerSentEvents(eventStream);
+    }
 }
