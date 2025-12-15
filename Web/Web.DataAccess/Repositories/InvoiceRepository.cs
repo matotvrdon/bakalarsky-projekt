@@ -16,7 +16,7 @@ public class InvoiceRepository : IInvoiceRepository
         _context = context;
     }
 
-    public async Task<int> GetAllSumAsync(DateTime date)
+    public async Task<int> GetAllSumAsync(DateOnly date)
     {
         return await _context.Invoice.Where(i => i.IssueDate.Year == date.Year).CountAsync();
     }

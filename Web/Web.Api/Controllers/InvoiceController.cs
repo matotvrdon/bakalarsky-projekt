@@ -17,9 +17,9 @@ public class InvoiceController : ControllerBase
     }
 
     [HttpGet("{invoiceId}", Name = "GetInvoiceById")]
-    public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
+    public async Task<IActionResult> GetByIdAsync([FromRoute] int invoiceId)
     {
-        var invoice = await _service.GetByIdAsync(id);
+        var invoice = await _service.GetByIdAsync(invoiceId);
 
         if(invoice == null) {
             return NotFound();

@@ -5,7 +5,7 @@ namespace Web.Services.DTOs.Day;
 
 public class CreateDayDto
 {
-    public DateTime Date { get; set; }
+    public DateOnly Date { get; set; }
 
     public int ConferenceId { get; set; }
 }

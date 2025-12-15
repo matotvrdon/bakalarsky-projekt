@@ -4,6 +4,6 @@ public class CreateInvoiceDto
 {
     public int SupplierId { get; set; }
     public int CustomerId { get; set; }
-    public DateTime IssueDate { get; set; }
-    public DateTime DueDate { get; set; }
+    public DateOnly IssueDate { get; set; }
+    public DateOnly DueDate { get; set; }
 }
