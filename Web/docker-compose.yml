@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:16
+    container_name: web-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: web
+      POSTGRES_PASSWORD: webpass
+      POSTGRES_DB: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - web_pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  api-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web-api-dev
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: ${DEV_DB_CONNECTION_STRING}
+    ports:
+      - "5001:8080"
+
+  api-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web-api-test
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Test
+      ConnectionStrings__DefaultConnection: ${TEST_DB_CONNECTION_STRING}
+    ports:
+      - "5002:8080"
+
+  api-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web-api-prod
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: ${PROD_DB_CONNECTION_STRING}
+    ports:
+      - "5003:8080"
+
+volumes:
+  web_pgdata:

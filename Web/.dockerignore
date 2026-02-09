@@ -1,0 +1,12 @@
+.git
+.vs
+.idea
+**/bin
+**/obj
+**/*.user
+**/*.suo
+**/*.swp
+**/*.tmp
+**/*.log
+publish
+Arch*.zip

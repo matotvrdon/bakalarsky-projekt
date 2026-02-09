@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using Web.DataAccess.Data;
 using Web.IoC;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +17,14 @@ if (string.IsNullOrWhiteSpace(connectionString))
 builder.Services.AddInformaticsDi(connectionString);
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate();
+}
+
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Informatics.Api v1"));
 app.UseHttpsRedirection();
