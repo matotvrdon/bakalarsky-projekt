@@ -1,0 +1,33 @@
+services:
+  db-test:
+    image: postgres:16
+    container_name: web-postgres-test
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - web_pgdata_test:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api-test:
+    image: ghcr.io/${IMAGE_REPO}:${IMAGE_TAG}
+    container_name: web-api-test
+    restart: unless-stopped
+    depends_on:
+      db-test:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Test
+      ConnectionStrings__DefaultConnection: Host=db-test;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Port=5432
+      Database__AutoMigrate: ${DATABASE_AUTO_MIGRATE:-true}
+    ports:
+      - "5002:8080"
+
+volumes:
+  web_pgdata_test:
