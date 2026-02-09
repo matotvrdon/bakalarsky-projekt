@@ -31,12 +31,15 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore Web.sln
+        working-directory: Web
 
       - name: Build
         run: dotnet build Web.sln --no-restore --configuration Release
+        working-directory: Web
 
       - name: Run tests
         run: dotnet test Web.sln --no-build --configuration Release --verbosity normal
+        working-directory: Web
 
   set-matrix:
     needs: build-and-test
@@ -127,8 +130,8 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: Dockerfile
+          context: ./Web
+          file: ./Web/Dockerfile
           push: true
           tags: |
             ghcr.io/${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}
