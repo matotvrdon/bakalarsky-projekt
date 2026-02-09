@@ -138,6 +138,7 @@ jobs:
             ghcr.io/${{ env.IMAGE_REPO }}:${{ github.sha }}
 
       - name: Write SSH key
+        if: matrix.env != 'Production'
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -165,13 +166,22 @@ jobs:
           }
           chmod 644 ~/.ssh/known_hosts 2>/dev/null || true
 
+      - name: Skip deployment for Production (TUKE Plesk - no Docker)
+        if: matrix.env == 'Production'
+        run: |
+          echo "::notice::Production deployment skipped - TUKE Plesk doesn't support Docker"
+          echo "Docker image has been pushed to: ghcr.io/${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}"
+          echo "To deploy, use a VPS or cloud provider with Docker support"
+
       - name: Ensure remote directory
+        if: matrix.env != 'Production'
         run: |
           SSH_PORT="${{ secrets.SSH_PORT }}"
           SSH_PORT="${SSH_PORT:-22}"
           ssh -p "$SSH_PORT" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "mkdir -p /srv/web-api/docker"
 
       - name: Sync compose files
+        if: matrix.env != 'Production'
         run: |
           SSH_PORT="${{ secrets.SSH_PORT }}"
           SSH_PORT="${SSH_PORT:-22}"
@@ -186,6 +196,7 @@ jobs:
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/web-api/docker/"
 
       - name: Deploy
+        if: matrix.env != 'Production'
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
@@ -212,28 +223,8 @@ jobs:
              COMPOSE_PROJECT_NAME='web-${DEPLOY_ENV_LOWER}' \
              docker compose -f /srv/web-api/${COMPOSE_FILE} up -d"
 
-      - name: Deploy proxy (Production only)
-        if: matrix.env == 'Production'
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          CADDY_EMAIL: ${{ secrets.CADDY_EMAIL }}
-          CADDY_DOMAIN_PROD: ${{ secrets.CADDY_DOMAIN_PROD }}
-        run: |
-          SSH_PORT="${SSH_PORT:-22}"
-          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
-            "cd /srv/web-api && \
-             if ! docker ps --format '{{.Names}}' | grep -q '^web-caddy$'; then \
-               CADDY_EMAIL='${CADDY_EMAIL}' \
-               CADDY_DOMAIN_PROD='${CADDY_DOMAIN_PROD}' \
-               docker compose -f docker-compose.proxy.yml up -d; \
-             else \
-               echo 'Proxy already running, reloading Caddy config...'; \
-               docker exec web-caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile || true; \
-             fi"
-
       - name: Cleanup old Docker images
+        if: matrix.env != 'Production'
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
