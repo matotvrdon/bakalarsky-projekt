@@ -1,15 +1,9 @@
-using System.Diagnostics;
 using System.Globalization;
-using AutoMapper;
 using Microsoft.Extensions.Hosting;
-using QuestPDF.Companion;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using Web.Domain.Models;
 using Web.Services.Abstractions;
-using Web.Services.DTOs.Invoice;
-using Web.Services.DTOs.InvoiceItem;
 
 namespace Web.Services.Services
 {
@@ -18,11 +12,13 @@ namespace Web.Services.Services
         
         private readonly IInvoiceService _invoiceService;
         private readonly IConferenceService _conferenceService;
+        private readonly IHostEnvironment _hostEnvironment;
 
-        public PdfService(IInvoiceService invoiceService, IConferenceService conferenceService)
+        public PdfService(IInvoiceService invoiceService, IConferenceService conferenceService, IHostEnvironment hostEnvironment)
         {
             _invoiceService = invoiceService;
             _conferenceService = conferenceService;
+            _hostEnvironment = hostEnvironment;
         }
 
 
@@ -392,8 +388,6 @@ namespace Web.Services.Services
             });
 
             document.GeneratePdf(ms);
-            await document.ShowInCompanionAsync();
-
             return ms.ToArray();
         }
 
@@ -419,7 +413,8 @@ namespace Web.Services.Services
                     page.Header().Row(row =>
                     {
                         row.RelativeItem();
-                        row.ConstantItem(60).Image("Assets/logo.png");
+                        var logoPath = Path.Combine(_hostEnvironment.ContentRootPath, "Assets", "logo.png");
+                        row.ConstantItem(60).Image(logoPath);
                     });
 
                     page.Content()
@@ -518,8 +513,6 @@ namespace Web.Services.Services
 
 
             document.GeneratePdf(ms);
-            await document.ShowInCompanionAsync();
-
             return ms.ToArray();
         }
     }

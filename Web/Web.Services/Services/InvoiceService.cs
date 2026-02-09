@@ -21,17 +21,19 @@ public class InvoiceService : IInvoiceService
     public async Task<InvoiceDto?> GetByIdAsync(int id)
     {
         var invoice = await _invoiceRepository.GetByIdAsync(id);
-        if (invoice == null) throw new NullReferenceException($"Invoice with id {id} not found.");
+        if (invoice == null)
+        {
+            return null;
+        }
         await CalculateTotalPrice(invoice);
-        return _mapper.Map<InvoiceDto?>(invoice);
+        return _mapper.Map<InvoiceDto>(invoice);
     }
 
     public async Task<InvoiceDto> CreateAsync(CreateInvoiceDto createInvoiceDto)
     {
         var invoice = _mapper.Map<Invoice>(createInvoiceDto);
         await CalculateTotalPrice(invoice);
-        await CalculateAllInvoices(invoice);
-        await _invoiceRepository.AddAsync(invoice);
+        await _invoiceRepository.AddWithNumberAsync(invoice);
         return _mapper.Map<InvoiceDto>(invoice);
     }
     
@@ -47,10 +49,4 @@ public class InvoiceService : IInvoiceService
         return totalPrice;
     }
 
-    private async Task<int> CalculateAllInvoices(Invoice invoice)
-    {
-        var invoiceCount = await _invoiceRepository.GetAllSumAsync(invoice.IssueDate);
-        invoice.InvoiceNumber = $"{invoiceCount+1}/{invoice.IssueDate.ToString("yyyy")}";
-        return invoiceCount;
-    }
 }

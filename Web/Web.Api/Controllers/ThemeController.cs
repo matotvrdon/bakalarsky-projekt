@@ -40,7 +40,7 @@ public class ThemeController : ControllerBase
     public async Task<IActionResult> AddThemeAsync([FromBody] CreateThemeDto createThemeDto)
     {
         var result = await _themeService.AddAsync(createThemeDto);
-        return CreatedAtAction("GetThemeById", new { themeId = result.Id }, result);
+        return CreatedAtRoute("GetThemeById", new { themeId = result.Id }, result);
     }
 
     [HttpPut("update-theme", Name = "UpdateTheme")]

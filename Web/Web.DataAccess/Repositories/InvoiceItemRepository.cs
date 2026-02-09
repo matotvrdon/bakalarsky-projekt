@@ -16,7 +16,9 @@ public class InvoiceItemRepository : IInvoiceItemRepository
 
     public async Task<InvoiceItem?> GetByIdAsync(int invoiceItemId)
     {
-        return await _context.InvoiceItem.FirstOrDefaultAsync(x => x.Id == invoiceItemId);
+        return await _context.InvoiceItem
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == invoiceItemId);
     }
 
     public async Task AddAsync(InvoiceItem invoiceItem)

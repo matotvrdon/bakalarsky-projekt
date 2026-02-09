@@ -17,9 +17,9 @@ public class InvoiceController : ControllerBase
     }
 
     [HttpGet("{invoiceId}", Name = "GetInvoiceById")]
-    public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
+    public async Task<IActionResult> GetByIdAsync([FromRoute] int invoiceId)
     {
-        var invoice = await _service.GetByIdAsync(id);
+        var invoice = await _service.GetByIdAsync(invoiceId);
 
         if(invoice == null) {
             return NotFound();
@@ -32,6 +32,6 @@ public class InvoiceController : ControllerBase
     public async Task<IActionResult> CreateAsync([FromBody] CreateInvoiceDto createInvoiceDto)
     {
         var invoice = await _service.CreateAsync(createInvoiceDto);
-        return CreatedAtAction("GetById", new { invoiceId = invoice.Id }, invoice);
+        return CreatedAtRoute("GetInvoiceById", new { invoiceId = invoice.Id }, invoice);
     }
 }

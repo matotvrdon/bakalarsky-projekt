@@ -18,6 +18,7 @@ public class DayRepository : IDayRepository
     public async Task<List<Day>> GetAllByConferenceIdAsync(int conferenceId)
     {
        return await _context.Day
+           .AsNoTracking()
            .Include(d => d.Session)
                 .ThenInclude(s => s.Theme)
                     .ThenInclude(t => t.Talk)
@@ -28,6 +29,7 @@ public class DayRepository : IDayRepository
     public async Task<Day?> GetByDayIdAsync(int dayId)
     {
         return await _context.Day
+            .AsNoTracking()
             .Include(d => d.Session)
                 .ThenInclude(s => s.Theme)
                     .ThenInclude(t => t.Talk)

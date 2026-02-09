@@ -39,7 +39,7 @@ public class TalkController : ControllerBase
     public async Task<IActionResult> AddTalkAsync([FromBody] CreateTalkDto createTalkDto)
     {
         var result = await _talkService.AddAsync(createTalkDto);
-        return CreatedAtAction("GetTalkById", new { talkId = result.Id }, result);
+        return CreatedAtRoute("GetTalkById", new { talkId = result.Id }, result);
     }
 
     [HttpPut("update-talk", Name = "UpdateTalk")]

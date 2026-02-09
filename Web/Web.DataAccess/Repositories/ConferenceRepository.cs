@@ -18,12 +18,14 @@ public class ConferenceRepository : IConferenceRepository
     public async Task<List<Conference>> GetAllAsync()
     {
         return await _context.Conference
+            .AsNoTracking()
             .ToListAsync();
     }
 
     public async Task<Conference?> GetByIdAsync(int id)
     {
         var conference = await _context.Conference
+            .AsNoTracking()
             .Include(c => c.Day)
                 .ThenInclude(d => d.Session)
                     .ThenInclude(s => s.Theme)

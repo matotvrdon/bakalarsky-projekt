@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
@@ -17,12 +17,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="itext" Version="9.3.0" />
-        <PackageReference Include="itext.bouncy-castle-adapter" Version="9.3.0" />
-        <PackageReference Include="Laraue.EfCoreTriggers.Common" Version="9.0.1" />
-        <PackageReference Include="Laraue.EfCoreTriggers.PostgreSql" Version="9.0.1" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+        <PackageReference Include="Laraue.EfCoreTriggers.Common" Version="10.4.0" />
+        <PackageReference Include="Laraue.EfCoreTriggers.PostgreSql" Version="10.4.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
     </ItemGroup>
     
 </Project>

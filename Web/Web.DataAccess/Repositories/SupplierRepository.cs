@@ -18,6 +18,7 @@ public class SupplierRepository : ISupplierRepository
     public async Task<Supplier?> GetByIdAsync(int id)
     {
         return await _context.Supplier
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 }

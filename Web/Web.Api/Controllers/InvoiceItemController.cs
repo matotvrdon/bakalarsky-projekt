@@ -9,12 +9,10 @@ namespace Web.Api.Controllers;
 public class InvoiceItemController : ControllerBase
 {
     private readonly IInvoiceItemService _invoiceItemService;
-    private readonly IInvoiceService _invoiceService;
 
-    public InvoiceItemController(IInvoiceItemService invoiceItemService, IInvoiceService invoiceService)
+    public InvoiceItemController(IInvoiceItemService invoiceItemService)
     {
         _invoiceItemService = invoiceItemService;
-        _invoiceService = invoiceService;
     }
 
     [HttpGet("{invoiceItemId:int}", Name = "GetInvoiceItemById")]
@@ -34,6 +32,6 @@ public class InvoiceItemController : ControllerBase
     public async Task<IActionResult> CreateAsync([FromBody] CreateInvoiceItemDto createInvoiceItemDto)
     {
         var result = await _invoiceItemService.AddAsync(createInvoiceItemDto);
-        return CreatedAtAction("GetById", new { invoiceItemId = result.Id }, result);
+        return CreatedAtRoute("GetInvoiceItemById", new { invoiceItemId = result.Id }, result);
     }
 }

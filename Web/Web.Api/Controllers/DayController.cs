@@ -40,7 +40,7 @@ public class DayController : ControllerBase
     public async Task<IActionResult> AddDayAsync([FromBody] CreateDayDto createDayDto)
     {
         var result = await _dayService.AddAsync(createDayDto);
-        return CreatedAtAction("GetDayById", new { dayId = result.Id }, result);
+        return CreatedAtRoute("GetDayById", new { dayId = result.Id }, result);
     }
 
     [HttpPut("update-day", Name = "UpdateDay")]

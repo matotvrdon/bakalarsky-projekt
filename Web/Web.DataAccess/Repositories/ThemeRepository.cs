@@ -17,6 +17,7 @@ public class ThemeRepository : IThemeRepository
     public async Task<List<Theme>> GetAllBySessionIdAsync(int sessionId)
     {
         return await _context.Theme
+            .AsNoTracking()
             .Include(t => t.Talk)
             .Where(t => t.SessionId == sessionId)
             .ToListAsync();
@@ -25,6 +26,7 @@ public class ThemeRepository : IThemeRepository
     public async Task<Theme?> GetByThemeIdAsync(int themeId)
     {
         return await _context.Theme
+            .AsNoTracking()
             .Include(t => t.Talk)
             .FirstOrDefaultAsync(x => x.Id == themeId);
     }

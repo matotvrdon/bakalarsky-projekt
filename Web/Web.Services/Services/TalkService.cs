@@ -23,10 +23,10 @@ public class TalkService : ITalkService
         return _mapper.Map<List<TalkDto>>(talks);
     }
 
-    public Task<TalkDto?> GetByTalkIdAsync(int talkId)
+    public async Task<TalkDto?> GetByTalkIdAsync(int talkId)
     {
-        var talk = _talkRepository.GetByTalkIdAsync(talkId);
-        return _mapper.Map<Task<TalkDto?>>(talk);
+        var talk = await _talkRepository.GetByTalkIdAsync(talkId);
+        return _mapper.Map<TalkDto?>(talk);
     }
 
     public async Task<TalkDto> AddAsync(CreateTalkDto createTalkDto)

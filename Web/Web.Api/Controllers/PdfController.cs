@@ -9,14 +9,10 @@ namespace Web.Api.Controllers;
 public class PdfController : ControllerBase
 {
     private readonly IPdfService _pdfService;
-    private readonly ISupplierService _supplierService;
-    private readonly IInvoiceItemService _invoiceItemService;
 
-    public PdfController(IPdfService pdfService, ISupplierService supplierService, IInvoiceItemService invoiceItemService)
+    public PdfController(IPdfService pdfService)
     {
         _pdfService = pdfService;
-        _supplierService = supplierService;
-        _invoiceItemService = invoiceItemService;
     }
     
     [HttpPost("create-invoice/{invoiceId:int}")]

@@ -17,6 +17,7 @@ public class TalkRepository : ITalkRepository
     public async Task<List<Talk>> GetAllByThemeIdAsync(int themeId)
     {
         return await _context.Talk
+            .AsNoTracking()
             .Where(t => t.ThemeId == themeId)
             .ToListAsync();
     }
@@ -24,6 +25,7 @@ public class TalkRepository : ITalkRepository
     public async Task<Talk?> GetByTalkIdAsync(int talkId)
     {
         return await _context.Talk
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == talkId);
     }
 

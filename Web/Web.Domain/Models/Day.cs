@@ -6,7 +6,7 @@ public class Day
     public DateTime Date { get; set; }
     
     public int ConferenceId { get; set; }
-    public Conference Conference { get; set; }
+    public Conference Conference { get; set; } = null!;
     
-    public List<Session> Session { get; set; }
+    public List<Session> Session { get; set; } = new();
 }

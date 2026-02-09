@@ -48,6 +48,6 @@ public class AttendeeController : ControllerBase
     public async Task<IActionResult> CreateAsync(CreateAttendeeDto createAttendeeDto)
     {
         var result = await _attendeeService.AddAttendeeAsync(createAttendeeDto);
-        return CreatedAtAction("GetById", new { attendeeId = result.Id }, result);
+        return CreatedAtRoute("GetAttendeeById", new { attendeeId = result.Id }, result);
     }
 }

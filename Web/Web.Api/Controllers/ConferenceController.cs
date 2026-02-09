@@ -38,7 +38,7 @@ public class ConferenceController : ControllerBase
     public async Task<IActionResult> AddAsync([FromBody] CreateConferenceDto createConferenceDto)
     {
         var result = await _repository.AddAsync(createConferenceDto);
-        return CreatedAtAction("GetById", new { id = result.Id }, result);
+        return CreatedAtRoute("GetConferenceById", new { id = result.Id }, result);
     }
     
     [HttpDelete("{id:int}")]

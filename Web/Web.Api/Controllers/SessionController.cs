@@ -40,7 +40,7 @@ public class SessionController : ControllerBase
     public async Task<IActionResult> AddSessionAsync([FromBody] CreateSessionDto createSessionDto)
     {
         var result = await _sessionService.AddAsync(createSessionDto);
-        return CreatedAtAction("GetSessionById", new { sessionId = result.Id }, result);
+        return CreatedAtRoute("GetSessionById", new { sessionId = result.Id }, result);
     }
 
     [HttpPut("update-session", Name = "UpdateSession")]

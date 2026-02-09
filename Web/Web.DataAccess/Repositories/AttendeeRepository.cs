@@ -17,6 +17,7 @@ public class AttendeeRepository : IAttendeeRepository
     public async Task<List<Attendee>> GetAllByCustomerIdAsync(int customerId)
     {
         return await _context.Attendee
+            .AsNoTracking()
             .Include(a => a.InvoiceItem)
             .Include(a => a.Customer)
             .Where(a => a.CustomerId == customerId)
@@ -48,6 +49,7 @@ public class AttendeeRepository : IAttendeeRepository
     public async Task<Attendee?> GetAttendeeByIdAsync(int id)
     {
         return await _context.Attendee
+            .AsNoTracking()
             .Include(a => a.InvoiceItem)
             .Include(a => a.Customer)
             .FirstOrDefaultAsync(a => a.Id == id);

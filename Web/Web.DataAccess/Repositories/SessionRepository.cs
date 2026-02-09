@@ -17,6 +17,7 @@ public class SessionRepository : ISessionRepository
     public async Task<List<Session>> GetAllByDayIdAsync(int dayId)
     {
         return await _context.Session
+            .AsNoTracking()
             .Include(s => s.Theme)
                 .ThenInclude(t => t.Talk)
             .Where(s => s.DayId == dayId)
@@ -26,6 +27,7 @@ public class SessionRepository : ISessionRepository
     public async Task<Session?> GetBySessionIdAsync(int sessionId)
     {
         return await _context.Session 
+            .AsNoTracking()
             .Include(s => s.Theme)
                 .ThenInclude(t => t.Talk)
             .FirstOrDefaultAsync(s => s.Id == sessionId);

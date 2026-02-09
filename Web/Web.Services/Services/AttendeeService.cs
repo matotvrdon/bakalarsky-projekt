@@ -34,6 +34,10 @@ public class AttendeeService : IAttendeeService
         List<Attendee?> attendees = await _attendeeRepository.GetAllByAttendeeIdAsync(updateAttendeeDto.AttendeeId);
 
         foreach (var attendee in attendees) {
+            if (attendee == null)
+            {
+                continue;
+            }
             attendee.CustomerId = updateAttendeeDto.CustomerId;
             await _attendeeRepository.UpdateAsync(attendee);
         }
