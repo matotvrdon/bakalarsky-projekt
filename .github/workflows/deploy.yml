@@ -38,27 +38,65 @@ jobs:
       - name: Run tests
         run: dotnet test Web.sln --no-build --configuration Release --verbosity normal
 
-  deploy:
+  set-matrix:
     needs: build-and-test
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      should_deploy: ${{ steps.set-matrix.outputs.should_deploy }}
+    steps:
+      - name: Determine deployment matrix
+        id: set-matrix
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            case "${{ github.ref_name }}" in
+              dev)
+                echo 'matrix={"include":[{"env":"Development","branch":"dev","compose":"docker-compose.dev.yml","image_tag":"dev-latest"}]}' >> $GITHUB_OUTPUT
+                echo 'should_deploy=true' >> $GITHUB_OUTPUT
+                ;;
+              test)
+                echo 'matrix={"include":[{"env":"Test","branch":"test","compose":"docker-compose.test.yml","image_tag":"test-latest"}]}' >> $GITHUB_OUTPUT
+                echo 'should_deploy=true' >> $GITHUB_OUTPUT
+                ;;
+              main)
+                echo 'matrix={"include":[{"env":"Production","branch":"main","compose":"docker-compose.prod.yml","image_tag":"prod-latest"}]}' >> $GITHUB_OUTPUT
+                echo 'should_deploy=true' >> $GITHUB_OUTPUT
+                ;;
+              *)
+                echo 'matrix={"include":[]}' >> $GITHUB_OUTPUT
+                echo 'should_deploy=false' >> $GITHUB_OUTPUT
+                ;;
+            esac
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            case "${{ inputs.environment }}" in
+              Development)
+                echo 'matrix={"include":[{"env":"Development","branch":"dev","compose":"docker-compose.dev.yml","image_tag":"dev-latest"}]}' >> $GITHUB_OUTPUT
+                echo 'should_deploy=true' >> $GITHUB_OUTPUT
+                ;;
+              Test)
+                echo 'matrix={"include":[{"env":"Test","branch":"test","compose":"docker-compose.test.yml","image_tag":"test-latest"}]}' >> $GITHUB_OUTPUT
+                echo 'should_deploy=true' >> $GITHUB_OUTPUT
+                ;;
+              Production)
+                echo 'matrix={"include":[{"env":"Production","branch":"main","compose":"docker-compose.prod.yml","image_tag":"prod-latest"}]}' >> $GITHUB_OUTPUT
+                echo 'should_deploy=true' >> $GITHUB_OUTPUT
+                ;;
+              *)
+                echo 'matrix={"include":[]}' >> $GITHUB_OUTPUT
+                echo 'should_deploy=false' >> $GITHUB_OUTPUT
+                ;;
+            esac
+          else
+            echo 'matrix={"include":[]}' >> $GITHUB_OUTPUT
+            echo 'should_deploy=false' >> $GITHUB_OUTPUT
+          fi
+
+  deploy:
+    needs: set-matrix
+    if: needs.set-matrix.outputs.should_deploy == 'true'
+    runs-on: ubuntu-latest
     strategy:
-      matrix:
-        include:
-          - env: Development
-            branch: dev
-            compose: docker-compose.dev.yml
-            image_tag: dev-latest
-          - env: Test
-            branch: test
-            compose: docker-compose.test.yml
-            image_tag: test-latest
-          - env: Production
-            branch: main
-            compose: docker-compose.prod.yml
-            image_tag: prod-latest
-    if: >
-      (github.event_name == 'push' && github.ref_name == matrix.branch) ||
-      (github.event_name == 'workflow_dispatch' && inputs.environment == matrix.env)
+      matrix: ${{ fromJson(needs.set-matrix.outputs.matrix) }}
     environment: ${{ matrix.env }}
     permissions:
       contents: read
