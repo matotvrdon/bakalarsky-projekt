@@ -138,13 +138,24 @@ jobs:
             ghcr.io/${{ env.IMAGE_REPO }}:${{ github.sha }}
 
       - name: Write SSH key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
         run: |
+          if [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "::error::SSH_PRIVATE_KEY secret is not set"
+            exit 1
+          fi
+          if [ -z "$SSH_HOST" ]; then
+            echo "::error::SSH_HOST secret is not set"
+            exit 1
+          fi
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          SSH_PORT="${{ secrets.SSH_PORT }}"
           SSH_PORT="${SSH_PORT:-22}"
-          ssh-keyscan -p "$SSH_PORT" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
 
       - name: Ensure remote directory
         run: |
@@ -157,13 +168,13 @@ jobs:
           SSH_PORT="${{ secrets.SSH_PORT }}"
           SSH_PORT="${SSH_PORT:-22}"
           rsync -az -e "ssh -p $SSH_PORT" \
-            docker-compose.dev.yml \
-            docker-compose.test.yml \
-            docker-compose.prod.yml \
-            docker-compose.proxy.yml \
+            Web/docker-compose.dev.yml \
+            Web/docker-compose.test.yml \
+            Web/docker-compose.prod.yml \
+            Web/docker-compose.proxy.yml \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/web-api/"
           rsync -az -e "ssh -p $SSH_PORT" \
-            docker/Caddyfile \
+            Web/docker/Caddyfile \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/web-api/docker/"
 
       - name: Deploy
