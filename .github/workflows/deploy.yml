@@ -152,10 +152,18 @@ jobs:
             exit 1
           fi
           mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           SSH_PORT="${SSH_PORT:-22}"
-          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+          echo "Scanning SSH host keys for $SSH_HOST on port $SSH_PORT..."
+          ssh-keyscan -T 10 -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null || {
+            echo "::warning::ssh-keyscan failed, adding host to known_hosts with StrictHostKeyChecking disabled"
+            echo "Host $SSH_HOST" >> ~/.ssh/config
+            echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+            echo "  UserKnownHostsFile /dev/null" >> ~/.ssh/config
+          }
+          chmod 644 ~/.ssh/known_hosts 2>/dev/null || true
 
       - name: Ensure remote directory
         run: |
