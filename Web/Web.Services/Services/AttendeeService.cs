@@ -10,7 +10,7 @@ public class AttendeeService : IAttendeeService
 {
     private readonly IAttendeeRepository _attendeeRepository;
     private readonly IMapper _mapper;
-     
+    
     public AttendeeService(IAttendeeRepository attendeeRepository, IMapper mapper)
     {
         _attendeeRepository = attendeeRepository;
