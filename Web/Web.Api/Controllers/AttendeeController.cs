@@ -33,16 +33,16 @@ public class AttendeeController : ControllerBase
         return Ok(attendee);
     }
 
-    // [HttpPut("add-customer")]
-    // public async Task<IActionResult> UpdateAsync([FromBody] UpdateAttendeeDto updateAttendeeDto)
-    // {
-    //     var result = await _attendeeService.UpdateAttendeeAsync(updateAttendeeDto);
-    //     if (result == null)
-    //     {
-    //         return NotFound($"Attendee with id {updateAttendeeDto.AttendeeId} not found.");
-    //     }
-    //     return Ok(result);
-    // }
+    [HttpPut("add-customer")]
+    public async Task<IActionResult> UpdateAsync([FromBody] UpdateAttendeeDto updateAttendeeDto)
+    {
+        var result = await _attendeeService.UpdateAttendeeAsync(updateAttendeeDto);
+        if (result == null)
+        {
+            return NotFound($"Attendee with id {updateAttendeeDto.AttendeeId} not found.");
+        }
+        return Ok(result);
+    }
 
     [HttpPost("create-attendee")]
     public async Task<IActionResult> CreateAsync(CreateAttendeeDto createAttendeeDto)
