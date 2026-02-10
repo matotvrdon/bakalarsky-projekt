@@ -104,6 +104,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      attestations: write
+      id-token: write
     env:
       IMAGE_TAG: ${{ matrix.image_tag }}
       DEPLOY_ENV: ${{ matrix.env }}
@@ -131,6 +133,7 @@ jobs:
           context: ./Web
           file: ./Web/Dockerfile
           push: true
+          provenance: false
           tags: |
             ghcr.io/${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}
             ghcr.io/${{ env.IMAGE_REPO }}:${{ github.sha }}
