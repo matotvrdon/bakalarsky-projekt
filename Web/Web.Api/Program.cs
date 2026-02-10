@@ -6,6 +6,25 @@ using Web.IoC;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        if (corsOrigins is { Length: > 0 })
+        {
+            policy.WithOrigins(corsOrigins)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        }
+        else
+        {
+            policy.AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        }
+    });
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -44,6 +63,7 @@ if (useHttpsRedirection)
 {
     app.UseHttpsRedirection();
 }
+app.UseCors();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
