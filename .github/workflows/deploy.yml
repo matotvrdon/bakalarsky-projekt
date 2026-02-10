@@ -165,6 +165,37 @@ jobs:
           }
           chmod 644 ~/.ssh/known_hosts 2>/dev/null || true
 
+      - name: Preflight SSH connectivity
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SSH_HOST" ]; then
+            echo "::error::SSH_HOST secret is not set"
+            exit 1
+          fi
+          if [ -z "$SSH_USER" ]; then
+            echo "::error::SSH_USER secret is not set"
+            exit 1
+          fi
+          SSH_PORT="${SSH_PORT:-22}"
+          echo "Resolving $SSH_HOST..."
+          getent hosts "$SSH_HOST" >/dev/null || {
+            echo "::error::DNS lookup failed for $SSH_HOST"
+            exit 1
+          }
+          echo "Checking TCP port $SSH_PORT on $SSH_HOST..."
+          if command -v nc >/dev/null 2>&1; then
+            nc -vz -w 5 "$SSH_HOST" "$SSH_PORT"
+          else
+            timeout 5 bash -c "cat < /dev/null > /dev/tcp/$SSH_HOST/$SSH_PORT"
+          fi
+          echo "Attempting SSH handshake..."
+          ssh -o BatchMode=yes -o ConnectTimeout=10 -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "exit 0"
+          echo "SSH preflight OK."
+
       - name: Ensure remote directory
         run: |
           SSH_PORT="${{ secrets.SSH_PORT }}"
