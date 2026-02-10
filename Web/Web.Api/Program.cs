@@ -7,7 +7,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-
 var corsPolicy = "AllowAll";
 builder.Services.AddCors(options =>
 {
