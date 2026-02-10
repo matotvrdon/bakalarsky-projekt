@@ -6,19 +6,21 @@ using Web.IoC;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+
+var CorsPolicy = "FrontendCors";
 
 builder.Services.AddCors(o =>
 {
     o.AddPolicy(CorsPolicy, p =>
         p.WithOrigins(
-            "https://tvojadomena.sk",
-            "http://tvojadomena.sk"
-        )
-        .AllowAnyHeader()
-        .AllowAnyMethod()
+                "https://tvojadomena.sk",
+                "http://tvojadomena.sk"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
     );
 });
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
