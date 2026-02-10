@@ -7,20 +7,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-var CorsPolicy = "FrontendCors";
-
-builder.Services.AddCors(o =>
+var corsPolicy = "AllowAll";
+builder.Services.AddCors(options =>
 {
-    o.AddPolicy(CorsPolicy, p =>
-        p.WithOrigins(
-                "https://tvojadomena.sk",
-                "http://tvojadomena.sk"
-            )
-            .AllowAnyHeader()
+    options.AddPolicy(corsPolicy, policy =>
+        policy.AllowAnyOrigin()
             .AllowAnyMethod()
+            .AllowAnyHeader()
     );
 });
-
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -59,7 +54,7 @@ if (useHttpsRedirection)
 {
     app.UseHttpsRedirection();
 }
-app.UseCors(CorsPolicy);
+app.UseCors(corsPolicy);
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
