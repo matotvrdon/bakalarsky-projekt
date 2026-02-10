@@ -6,25 +6,21 @@ using Web.IoC;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
-builder.Services.AddCors(options =>
+
+var CorsPolicy = "FrontendCors";
+
+builder.Services.AddCors(o =>
 {
-    options.AddDefaultPolicy(policy =>
-    {
-        if (corsOrigins is { Length: > 0 })
-        {
-            policy.WithOrigins(corsOrigins)
-                .AllowAnyHeader()
-                .AllowAnyMethod();
-        }
-        else
-        {
-            policy.AllowAnyOrigin()
-                .AllowAnyHeader()
-                .AllowAnyMethod();
-        }
-    });
+    o.AddPolicy(CorsPolicy, p =>
+        p.WithOrigins(
+                "https://tvojadomena.sk",
+                "http://tvojadomena.sk"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+    );
 });
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -63,7 +59,7 @@ if (useHttpsRedirection)
 {
     app.UseHttpsRedirection();
 }
-app.UseCors();
+app.UseCors(CorsPolicy);
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
