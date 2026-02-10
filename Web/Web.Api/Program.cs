@@ -7,31 +7,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-var corsPolicy = "FrontendCors";
-string[] allowedOrigins;
-if (builder.Environment.IsDevelopment())
+var corsPolicy = "AllowAll";
+builder.Services.AddCors(options =>
 {
-    allowedOrigins = new[] { "http://147.232.205.193:5004" };
-}
-else if (builder.Environment.IsEnvironment("Test"))
-{
-    
-    allowedOrigins = new[] { "http://147.232.205.193:5005" };
-}
-else
-{
-    allowedOrigins = new[] { "http://147.232.205.193:5006" };
-}
-
-builder.Services.AddCors(o =>
-{
-    o.AddPolicy(corsPolicy, p =>
-        p.WithOrigins(allowedOrigins)
-            .AllowAnyHeader()
+    options.AddPolicy(corsPolicy, policy =>
+        policy.AllowAnyOrigin()
             .AllowAnyMethod()
+            .AllowAnyHeader()
     );
 });
-
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
