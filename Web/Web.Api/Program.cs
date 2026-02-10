@@ -7,15 +7,25 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-var CorsPolicy = "FrontendCors";
+var corsPolicy = "FrontendCors";
+string[] allowedOrigins;
+if (builder.Environment.IsDevelopment())
+{
+    allowedOrigins = new[] { "http://147.232.205.193:5004" };
+}
+else if (builder.Environment.IsEnvironment("Test"))
+{
+    allowedOrigins = new[] { "http://147.232.205.193:5005" };
+}
+else
+{
+    allowedOrigins = new[] { "http://147.232.205.193:5006" };
+}
 
 builder.Services.AddCors(o =>
 {
-    o.AddPolicy(CorsPolicy, p =>
-        p.WithOrigins(
-                "https://tvojadomena.sk",
-                "http://tvojadomena.sk"
-            )
+    o.AddPolicy(corsPolicy, p =>
+        p.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
     );
@@ -59,7 +69,7 @@ if (useHttpsRedirection)
 {
     app.UseHttpsRedirection();
 }
-app.UseCors(CorsPolicy);
+app.UseCors(corsPolicy);
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
