@@ -1,0 +1,85 @@
+name: Build and deploy (prod)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: prod
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ secrets.IMAGE_REPO }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ secrets.IMAGE_REPO }}:latest
+
+  deploy:
+    runs-on: self-hosted
+    environment: prod
+    needs: build
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Write .env from environment secrets
+        run: |
+          cat > .env <<EOF
+          IMAGE_REPO=${{ secrets.IMAGE_REPO }}
+          IMAGE_TAG=${{ github.sha }}
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          DATABASE_AUTO_MIGRATE=false
+          CADDY_EMAIL=${{ secrets.CADDY_EMAIL }}
+          CADDY_DOMAIN_PROD=${{ secrets.CADDY_DOMAIN_PROD }}
+          EOF
+
+      - name: Deploy API
+        run: |
+          docker compose -f docker-compose.prod.yml pull
+          docker compose -f docker-compose.prod.yml up -d
+
+      - name: Deploy proxy
+        run: |
+          docker compose -f docker-compose.proxy.yml pull
+          docker compose -f docker-compose.proxy.yml up -d
+
+      - name: Remove env file
+        if: always()
+        run: rm -f .env
