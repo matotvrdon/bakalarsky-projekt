@@ -1,0 +1,201 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - dev
+      - test
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        type: choice
+        options:
+          - Development
+          - Test
+          - Production
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore Web.sln
+        working-directory: Web
+
+      - name: Build
+        run: dotnet build Web.sln --no-restore --configuration Release
+        working-directory: Web
+
+      - name: Run tests
+        run: dotnet test Web.sln --no-build --configuration Release --verbosity normal
+        working-directory: Web
+
+  set-matrix:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      should_deploy: ${{ steps.set-matrix.outputs.should_deploy }}
+    steps:
+      - name: Determine deployment matrix
+        id: set-matrix
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            case "${{ github.ref_name }}" in
+              dev)
+                echo 'matrix={"include":[{"env":"Development","branch":"dev","compose":"docker-compose.dev.yml","image_tag":"dev-latest"}]}' >> $GITHUB_OUTPUT
+                echo 'should_deploy=true' >> $GITHUB_OUTPUT
+                ;;
+              test)
+                echo 'matrix={"include":[{"env":"Test","branch":"test","compose":"docker-compose.test.yml","image_tag":"test-latest"}]}' >> $GITHUB_OUTPUT
+                echo 'should_deploy=true' >> $GITHUB_OUTPUT
+                ;;
+              main)
+                echo 'matrix={"include":[{"env":"Production","branch":"main","compose":"docker-compose.prod.yml","image_tag":"prod-latest"}]}' >> $GITHUB_OUTPUT
+                echo 'should_deploy=true' >> $GITHUB_OUTPUT
+                ;;
+              *)
+                echo 'matrix={"include":[]}' >> $GITHUB_OUTPUT
+                echo 'should_deploy=false' >> $GITHUB_OUTPUT
+                ;;
+            esac
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            case "${{ inputs.environment }}" in
+              Development)
+                echo 'matrix={"include":[{"env":"Development","branch":"dev","compose":"docker-compose.dev.yml","image_tag":"dev-latest"}]}' >> $GITHUB_OUTPUT
+                echo 'should_deploy=true' >> $GITHUB_OUTPUT
+                ;;
+              Test)
+                echo 'matrix={"include":[{"env":"Test","branch":"test","compose":"docker-compose.test.yml","image_tag":"test-latest"}]}' >> $GITHUB_OUTPUT
+                echo 'should_deploy=true' >> $GITHUB_OUTPUT
+                ;;
+              Production)
+                echo 'matrix={"include":[{"env":"Production","branch":"main","compose":"docker-compose.prod.yml","image_tag":"prod-latest"}]}' >> $GITHUB_OUTPUT
+                echo 'should_deploy=true' >> $GITHUB_OUTPUT
+                ;;
+              *)
+                echo 'matrix={"include":[]}' >> $GITHUB_OUTPUT
+                echo 'should_deploy=false' >> $GITHUB_OUTPUT
+                ;;
+            esac
+          else
+            echo 'matrix={"include":[]}' >> $GITHUB_OUTPUT
+            echo 'should_deploy=false' >> $GITHUB_OUTPUT
+          fi
+
+  # Build job beží na GitHub-hosted runner
+  build:
+    needs: set-matrix
+    if: needs.set-matrix.outputs.should_deploy == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.set-matrix.outputs.matrix) }}
+    permissions:
+      contents: read
+      packages: write
+    env:
+      IMAGE_TAG: ${{ matrix.image_tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set image repo
+        run: |
+          echo "IMAGE_REPO=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Web
+          file: ./Web/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}
+            ghcr.io/${{ env.IMAGE_REPO }}:${{ github.sha }}
+
+  # Deploy job beží na self-hosted runner (priamo na VM)
+  deploy:
+    needs: [set-matrix, build]
+    if: needs.set-matrix.outputs.should_deploy == 'true'
+    runs-on: self-hosted
+    strategy:
+      matrix: ${{ fromJson(needs.set-matrix.outputs.matrix) }}
+    environment: ${{ matrix.env }}
+    env:
+      IMAGE_TAG: ${{ matrix.image_tag }}
+      COMPOSE_FILE: ${{ matrix.compose }}
+      DEPLOY_ENV: ${{ matrix.env }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set environment variables
+        run: |
+          echo "IMAGE_REPO=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+          echo "DEPLOY_ENV_LOWER=$(echo '${{ matrix.env }}' | tr '[:upper:]' '[:lower:]' | sed 's/production/prod/' | sed 's/development/dev/')" >> "$GITHUB_ENV"
+
+      - name: Login to GHCR
+        run: echo '${{ secrets.GHCR_TOKEN }}' | docker login ghcr.io -u '${{ secrets.GHCR_USERNAME }}' --password-stdin
+
+      - name: Ensure deploy directory exists
+        run: mkdir -p /srv/web-api/docker
+
+      - name: Copy compose files
+        run: |
+          cp Web/docker-compose.dev.yml /srv/web-api/
+          cp Web/docker-compose.test.yml /srv/web-api/
+          cp Web/docker-compose.prod.yml /srv/web-api/
+          cp Web/docker-compose.proxy.yml /srv/web-api/
+          cp Web/docker/Caddyfile /srv/web-api/docker/
+
+      - name: Pull and deploy
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          DATABASE_AUTO_MIGRATE: ${{ secrets.DATABASE_AUTO_MIGRATE }}
+          CADDY_EMAIL: ${{ secrets.CADDY_EMAIL }}
+          CADDY_DOMAIN_PROD: ${{ secrets.CADDY_DOMAIN_PROD }}
+        run: |
+          export IMAGE_REPO="${IMAGE_REPO}"
+          export IMAGE_TAG="${IMAGE_TAG}"
+          export POSTGRES_USER="${POSTGRES_USER}"
+          export POSTGRES_PASSWORD="${POSTGRES_PASSWORD}"
+          export POSTGRES_DB="${POSTGRES_DB}"
+          export DATABASE_AUTO_MIGRATE="${DATABASE_AUTO_MIGRATE:-false}"
+          export COMPOSE_PROJECT_NAME="web-${DEPLOY_ENV_LOWER}"
+          
+          docker compose -f /srv/web-api/${COMPOSE_FILE} pull
+          docker compose -f /srv/web-api/${COMPOSE_FILE} up -d
+          
+          # Pre Production spusti aj Caddy proxy pre HTTPS
+          if [ "$DEPLOY_ENV_LOWER" = "prod" ]; then
+            export CADDY_EMAIL="${CADDY_EMAIL}"
+            export CADDY_DOMAIN_PROD="${CADDY_DOMAIN_PROD}"
+            docker compose -f /srv/web-api/docker-compose.proxy.yml pull
+            docker compose -f /srv/web-api/docker-compose.proxy.yml up -d
+          fi
+
+      - name: Cleanup old Docker images
+        run: docker image prune -af --filter 'until=168h' || true

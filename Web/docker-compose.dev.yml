@@ -1,0 +1,35 @@
+services:
+  db-dev:
+    image: postgres:16
+    container_name: web-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - web_pgdata_dev:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api-dev:
+    image: ghcr.io/${IMAGE_REPO}:${IMAGE_TAG}
+    container_name: web-api-dev
+    restart: unless-stopped
+    depends_on:
+      db-dev:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Host=db-dev;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Port=5432
+      Database__AutoMigrate: ${DATABASE_AUTO_MIGRATE:-true}
+    ports:
+      - "5001:8080"
+
+volumes:
+  web_pgdata_dev:
