@@ -15,6 +15,7 @@ if (builder.Environment.IsDevelopment())
 }
 else if (builder.Environment.IsEnvironment("Test"))
 {
+    
     allowedOrigins = new[] { "http://147.232.205.193:5005" };
 }
 else
