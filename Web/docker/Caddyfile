@@ -5,18 +5,13 @@
 # Production - HTTPS with domain
 {$CADDY_DOMAIN_PROD} {
   encode gzip
-  
-  # CORS headers for frontend
-  header {
-    Access-Control-Allow-Origin https://martin.tvrdon.website.tuke.sk
-    Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-    Access-Control-Allow-Headers "Content-Type, Authorization"
-    Access-Control-Allow-Credentials true
+
+  @api path /api* /swagger*
+  handle @api {
+    reverse_proxy web-api-prod:8080
   }
-  
-  # Handle preflight requests
-  @options method OPTIONS
-  respond @options 204
-  
-  reverse_proxy api-prod:8080
+
+  handle {
+    reverse_proxy bakalarsky-projekt-frontend-frontend-1:80
+  }
 }
