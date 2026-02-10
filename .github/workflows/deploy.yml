@@ -94,7 +94,7 @@ jobs:
             echo 'should_deploy=false' >> $GITHUB_OUTPUT
           fi
 
-  push-image:
+  deploy:
     needs: set-matrix
     if: needs.set-matrix.outputs.should_deploy == 'true'
     runs-on: ubuntu-latest
@@ -104,10 +104,9 @@ jobs:
     permissions:
       contents: read
       packages: write
-      attestations: write
-      id-token: write
     env:
       IMAGE_TAG: ${{ matrix.image_tag }}
+      COMPOSE_FILE: ${{ matrix.compose }}
       DEPLOY_ENV: ${{ matrix.env }}
     steps:
       - name: Checkout
@@ -116,6 +115,7 @@ jobs:
       - name: Set image repo
         run: |
           echo "IMAGE_REPO=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+          echo "DEPLOY_ENV_LOWER=$(echo '${{ matrix.env }}' | tr '[:upper:]' '[:lower:]' | sed 's/production/prod/' | sed 's/development/dev/')" >> "$GITHUB_ENV"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -124,8 +124,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Build and push image
         uses: docker/build-push-action@v6
@@ -133,20 +133,91 @@ jobs:
           context: ./Web
           file: ./Web/Dockerfile
           push: true
-          provenance: false
           tags: |
             ghcr.io/${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}
             ghcr.io/${{ env.IMAGE_REPO }}:${{ github.sha }}
 
-      - name: Summary
+      - name: Write SSH key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
         run: |
-          echo "## 🚀 Docker Image Published" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Environment:** ${{ matrix.env }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Image:** \`ghcr.io/${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### To deploy manually:" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "docker pull ghcr.io/${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}" >> $GITHUB_STEP_SUMMARY
-          echo "docker run -p 8080:8080 ghcr.io/${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          if [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "::error::SSH_PRIVATE_KEY secret is not set"
+            exit 1
+          fi
+          if [ -z "$SSH_HOST" ]; then
+            echo "::error::SSH_HOST secret is not set"
+            exit 1
+          fi
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          SSH_PORT="${SSH_PORT:-22}"
+          echo "Scanning SSH host keys for $SSH_HOST on port $SSH_PORT..."
+          ssh-keyscan -T 10 -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null || {
+            echo "::warning::ssh-keyscan failed, adding host to known_hosts with StrictHostKeyChecking disabled"
+            echo "Host $SSH_HOST" >> ~/.ssh/config
+            echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+            echo "  UserKnownHostsFile /dev/null" >> ~/.ssh/config
+          }
+          chmod 644 ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Ensure remote directory
+        run: |
+          SSH_PORT="${{ secrets.SSH_PORT }}"
+          SSH_PORT="${SSH_PORT:-22}"
+          ssh -p "$SSH_PORT" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "mkdir -p /srv/web-api/docker"
+
+      - name: Sync compose files
+        run: |
+          SSH_PORT="${{ secrets.SSH_PORT }}"
+          SSH_PORT="${SSH_PORT:-22}"
+          rsync -az -e "ssh -p $SSH_PORT" \
+            Web/docker-compose.dev.yml \
+            Web/docker-compose.test.yml \
+            Web/docker-compose.prod.yml \
+            Web/docker-compose.proxy.yml \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/web-api/"
+          rsync -az -e "ssh -p $SSH_PORT" \
+            Web/docker/Caddyfile \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/web-api/docker/"
+
+      - name: Deploy
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          DATABASE_AUTO_MIGRATE: ${{ secrets.DATABASE_AUTO_MIGRATE }}
+        run: |
+          SSH_PORT="${SSH_PORT:-22}"
+          DATABASE_AUTO_MIGRATE="${DATABASE_AUTO_MIGRATE:-false}"
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "echo '$GHCR_TOKEN' | docker login ghcr.io -u '$GHCR_USERNAME' --password-stdin && \
+             IMAGE_REPO='${IMAGE_REPO}' IMAGE_TAG='${IMAGE_TAG}' \
+             POSTGRES_USER='${POSTGRES_USER}' POSTGRES_PASSWORD='${POSTGRES_PASSWORD}' POSTGRES_DB='${POSTGRES_DB}' \
+             DATABASE_AUTO_MIGRATE='${DATABASE_AUTO_MIGRATE}' \
+             COMPOSE_PROJECT_NAME='web-${DEPLOY_ENV_LOWER}' \
+             docker compose -f /srv/web-api/${COMPOSE_FILE} pull && \
+             IMAGE_REPO='${IMAGE_REPO}' IMAGE_TAG='${IMAGE_TAG}' \
+             POSTGRES_USER='${POSTGRES_USER}' POSTGRES_PASSWORD='${POSTGRES_PASSWORD}' POSTGRES_DB='${POSTGRES_DB}' \
+             DATABASE_AUTO_MIGRATE='${DATABASE_AUTO_MIGRATE}' \
+             COMPOSE_PROJECT_NAME='web-${DEPLOY_ENV_LOWER}' \
+             docker compose -f /srv/web-api/${COMPOSE_FILE} up -d"
+
+      - name: Cleanup old Docker images
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          SSH_PORT="${SSH_PORT:-22}"
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "docker image prune -af --filter 'until=168h' || true"
