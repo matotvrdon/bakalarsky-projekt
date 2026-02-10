@@ -66,19 +66,12 @@ jobs:
           POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB=${{ secrets.POSTGRES_DB }}
           DATABASE_AUTO_MIGRATE=false
-          CADDY_EMAIL=${{ secrets.CADDY_EMAIL }}
-          CADDY_DOMAIN_PROD=${{ secrets.CADDY_DOMAIN_PROD }}
           EOF
 
       - name: Deploy API
         run: |
           docker compose -f docker-compose.prod.yml pull
           docker compose -f docker-compose.prod.yml up -d
-
-      - name: Deploy proxy
-        run: |
-          docker compose -f docker-compose.proxy.yml pull
-          docker compose -f docker-compose.proxy.yml up -d
 
       - name: Remove env file
         if: always()
