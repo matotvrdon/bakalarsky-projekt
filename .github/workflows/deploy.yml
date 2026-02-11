@@ -159,15 +159,13 @@ jobs:
         run: echo '${{ secrets.GHCR_TOKEN }}' | docker login ghcr.io -u '${{ secrets.GHCR_USERNAME }}' --password-stdin
 
       - name: Ensure deploy directory exists
-        run: mkdir -p /srv/web-api/docker
+        run: mkdir -p /srv/web-api
 
       - name: Copy compose files
         run: |
           cp Web/docker-compose.dev.yml /srv/web-api/
           cp Web/docker-compose.test.yml /srv/web-api/
           cp Web/docker-compose.prod.yml /srv/web-api/
-          cp Web/docker-compose.proxy.yml /srv/web-api/
-          cp Web/docker/Caddyfile /srv/web-api/docker/
 
       - name: Pull and deploy
         env:
@@ -175,8 +173,6 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           DATABASE_AUTO_MIGRATE: ${{ secrets.DATABASE_AUTO_MIGRATE }}
-          CADDY_EMAIL: ${{ secrets.CADDY_EMAIL }}
-          CADDY_DOMAIN_PROD: ${{ secrets.CADDY_DOMAIN_PROD }}
         run: |
           export IMAGE_REPO="${IMAGE_REPO}"
           export IMAGE_TAG="${IMAGE_TAG}"
@@ -188,14 +184,6 @@ jobs:
           
           docker compose -f /srv/web-api/${COMPOSE_FILE} pull
           docker compose -f /srv/web-api/${COMPOSE_FILE} up -d
-          
-          # Pre Production spusti aj Caddy proxy pre HTTPS
-          if [ "$DEPLOY_ENV_LOWER" = "prod" ]; then
-            export CADDY_EMAIL="${CADDY_EMAIL}"
-            export CADDY_DOMAIN_PROD="${CADDY_DOMAIN_PROD}"
-            docker compose -f /srv/web-api/docker-compose.proxy.yml pull
-            docker compose -f /srv/web-api/docker-compose.proxy.yml up -d
-          fi
 
       - name: Cleanup old Docker images
         run: docker image prune -af --filter 'until=168h' || true
