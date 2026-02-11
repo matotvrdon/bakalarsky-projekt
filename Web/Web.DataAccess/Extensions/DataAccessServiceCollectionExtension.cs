@@ -22,6 +22,8 @@ public static class DataAccessServiceCollectionExtension
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<IThemeRepository, ThemeRepository>();
         services.AddScoped<ITalkRepository, TalkRepository>();
+        services.AddScoped<INavBarMenuRepository, NavBarMenuRepository>();
+        services.AddScoped<IPageContentRepository, PageContentRepository>();
         
         return services;
     }
