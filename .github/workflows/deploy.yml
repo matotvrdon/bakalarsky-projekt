@@ -159,7 +159,7 @@ jobs:
         run: echo '${{ secrets.GHCR_TOKEN }}' | docker login ghcr.io -u '${{ secrets.GHCR_USERNAME }}' --password-stdin
 
       - name: Ensure deploy directory exists
-        run: mkdir -p /srv/web-api
+        run: mkdir -p /srv/web-api/docker
 
       - name: Copy compose files
         run: |
