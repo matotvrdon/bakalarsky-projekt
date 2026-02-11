@@ -48,6 +48,20 @@ namespace Web.DataAccess.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "NavBarMenu",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    IsActive = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NavBarMenu", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Supplier",
                 columns: table => new
                 {
@@ -297,6 +311,9 @@ namespace Web.DataAccess.Migrations
 
             migrationBuilder.DropTable(
                 name: "InvoiceItem");
+
+            migrationBuilder.DropTable(
+                name: "NavBarMenu");
 
             migrationBuilder.DropTable(
                 name: "Talk");

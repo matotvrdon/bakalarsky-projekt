@@ -21,6 +21,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Session> Session { get; set; }
     public DbSet<Theme> Theme { get; set; }
     public DbSet<Talk> Talk { get; set; }
+    public DbSet<NavBarMenu> NavBarMenu { get; set; }
+    public DbSet<PageContent> PageContent { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
