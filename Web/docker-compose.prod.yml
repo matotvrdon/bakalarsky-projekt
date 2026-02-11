@@ -30,13 +30,6 @@ services:
       Database__AutoMigrate: ${DATABASE_AUTO_MIGRATE:-false}
     ports:
       - "5003:8080"
-    networks:
-      - default
-      - web-proxy
-
-networks:
-  web-proxy:
-    name: web-proxy
 
 volumes:
   web_pgdata_prod:

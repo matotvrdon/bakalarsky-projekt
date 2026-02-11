@@ -12,7 +12,7 @@ using Web.DataAccess.Data;
 namespace Web.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260209165942_Initial")]
+    [Migration("20260211070156_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -225,6 +225,26 @@ namespace Web.DataAccess.Migrations
                     b.HasIndex("AttendeeId");
 
                     b.ToTable("InvoiceItem");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.NavBarMenu", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("IsActive")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("NavBarMenu");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.Session", b =>

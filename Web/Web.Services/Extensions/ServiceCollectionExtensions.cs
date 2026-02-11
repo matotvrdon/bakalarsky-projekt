@@ -20,6 +20,7 @@ public static class ServiceCollectionExtensions
         services.AddAutoMapper(typeof(SessionProfile));
         services.AddAutoMapper(typeof(TalkProfile));
         services.AddAutoMapper(typeof(ThemeProfile));
+        services.AddAutoMapper(typeof(PageContentProfile));
 
         services.AddScoped<IConferenceService, ConferenceService>();
         services.AddScoped<IInvoiceService, InvoiceService>();
@@ -32,6 +33,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISessionService, SessionService>();
         services.AddScoped<IThemeService, ThemeService>();
         services.AddScoped<ITalkService, TalkService>();
+        services.AddScoped<IPageContentService, PageContentService>();
         
         QuestPDF.Settings.License = LicenseType.Community;
 
