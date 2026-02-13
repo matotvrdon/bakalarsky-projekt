@@ -19,4 +19,10 @@
         <PackageReference Include="QuestPDF" Version="2025.12.4" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Abstractions\" />
+      <Folder Include="DTOs\" />
+      <Folder Include="Services\" />
+    </ItemGroup>
+
 </Project>
