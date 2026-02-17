@@ -10,7 +10,7 @@ using Web.DataAccess.Data;
 
 namespace Web.DataAccess.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
+    [DbContext(typeof(AppDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
@@ -22,7 +22,7 @@ namespace Web.DataAccess.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Web.Domain.Models.Attendee", b =>
+            modelBuilder.Entity("Web.Domain.Models.AccommodationBooking", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -30,30 +30,163 @@ namespace Web.DataAccess.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CustomerId")
+                    b.Property<DateTime>("CheckIn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CheckOut")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Nights")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("OptionId")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("ParticipantId")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CustomerId");
+                    b.HasIndex("OptionId");
 
-                    b.ToTable("Attendee");
+                    b.HasIndex("ParticipantId");
+
+                    b.ToTable("AccommodationBookings");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.AccommodationOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Amenities")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Available")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Hotel")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("RoomType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Total")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AccommodationOptions");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.CateringOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("PerDay")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CateringOptions");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.CateringOrder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ParticipantId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParticipantId");
+
+                    b.ToTable("CateringOrders");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.CateringOrderItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("OptionId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OptionId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("CateringOrderItems");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.Conference", b =>
@@ -67,6 +200,12 @@ namespace Web.DataAccess.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Location")
+                        .HasColumnType("text");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -76,10 +215,10 @@ namespace Web.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Conference");
+                    b.ToTable("Conferences");
                 });
 
-            modelBuilder.Entity("Web.Domain.Models.Customer", b =>
+            modelBuilder.Entity("Web.Domain.Models.ConferenceSettings", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -87,52 +226,307 @@ namespace Web.DataAccess.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("City")
+                    b.Property<int>("ConferenceId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ContactEmail")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContactPhone")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("EarlyBirdPercent")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("FeeParticipant")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("FeeSpeaker")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("FeeStudent")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("WelcomeMessage")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConferenceId")
+                        .IsUnique();
+
+                    b.ToTable("ConferenceSettings");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.Coupon", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Code")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Country")
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("MaxUses")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UsedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ValidTo")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("Value")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("Coupons");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.InvitationEmail", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Body")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Dic")
-                        .HasColumnType("text");
-
-                    b.Property<string>("IcDph")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Ico")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
+                    b.Property<string>("Recipients")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("PostalCode")
-                        .IsRequired()
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
                         .HasColumnType("text");
 
-                    b.Property<string>("Street")
+                    b.Property<string>("Subject")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Customer");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            City = "Košice",
-                            Country = "Slovanská Republika",
-                            Name = "Martn Tvrdoň",
-                            PostalCode = "040 11",
-                            Street = "Humenská 3"
-                        });
+                    b.ToTable("InvitationEmails");
                 });
 
-            modelBuilder.Entity("Web.Domain.Models.Day", b =>
+            modelBuilder.Entity("Web.Domain.Models.Invoice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BillingAddress")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BillingCompany")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BillingDic")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BillingIco")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ConferenceId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CouponCode")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("Discount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("InvoiceNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SharedCode")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConferenceId");
+
+                    b.ToTable("Invoices");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.InvoiceItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("InvoiceId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.ToTable("InvoiceItems");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.InvoiceParticipant", b =>
+                {
+                    b.Property<int>("InvoiceId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ParticipantId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("InvoiceId", "ParticipantId");
+
+                    b.HasIndex("ParticipantId");
+
+                    b.ToTable("InvoiceParticipants");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.Participant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Affiliation")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Country")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("InvoiceStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RegistrationDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("RegistrationType")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Participants");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.Registration", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConferenceId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ParticipantId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ParticipationType")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConferenceId");
+
+                    b.HasIndex("ParticipantId");
+
+                    b.ToTable("Registrations");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ScheduleItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -146,14 +540,38 @@ namespace Web.DataAccess.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("EndTime")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Location")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("SpeakerId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SpeakerName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("StartTime")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ConferenceId");
 
-                    b.ToTable("Day");
+                    b.HasIndex("SpeakerId");
+
+                    b.ToTable("ScheduleItems");
                 });
 
-            modelBuilder.Entity("Web.Domain.Models.Invoice", b =>
+            modelBuilder.Entity("Web.Domain.Models.Speaker", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -161,322 +579,205 @@ namespace Web.DataAccess.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CustomerId")
+                    b.Property<string>("Affiliation")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Bio")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Topics")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Speakers");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.Submission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("DueDate")
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Abstract")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Affiliation")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Authors")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ConferenceId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("InvoiceNumber")
+                    b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("IssueDate")
+                    b.Property<string>("Keywords")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PaperFileUrl")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ParticipantId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("WillPresent")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConferenceId");
+
+                    b.HasIndex("ParticipantId");
+
+                    b.ToTable("Submissions");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.SubmissionCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SubmissionCategories");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("SupplierId")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("TotalPrice")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
-
-                    b.HasIndex("SupplierId");
-
-                    b.ToTable("Invoice");
-                });
-
-            modelBuilder.Entity("Web.Domain.Models.InvoiceItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("AttendeeId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("Quantity")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("Unit")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AttendeeId");
-
-                    b.ToTable("InvoiceItem");
-                });
-
-            modelBuilder.Entity("Web.Domain.Models.NavBarMenu", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("IsActive")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("NavBarMenu");
-                });
-
-            modelBuilder.Entity("Web.Domain.Models.PageContent", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Html")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Markdown")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("NavBarMenuId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NavBarMenuId");
-
-                    b.ToTable("PageContent");
-                });
-
-            modelBuilder.Entity("Web.Domain.Models.Session", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("DayId")
-                        .HasColumnType("integer");
-
-                    b.Property<TimeOnly>("EndTime")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<TimeOnly>("StartTime")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DayId");
-
-                    b.ToTable("Session");
-                });
-
-            modelBuilder.Entity("Web.Domain.Models.Supplier", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("AddressCity")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("AddressPostalCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Bank")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("BankAccount")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Country")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Dic")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Iban")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("IcDph")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Ico")
+                    b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PostalCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Street")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Swift")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Supplier");
+                    b.HasIndex("Email")
+                        .IsUnique();
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Address = "Letná 40",
-                            AddressCity = "Košice",
-                            AddressPostalCode = "040 01",
-                            Bank = "Všeobecná úverová banka, a.s.",
-                            BankAccount = "1584034953/0200",
-                            City = "Košice",
-                            Country = "Slovanská Republika",
-                            Dic = "2021681970",
-                            Iban = "SK55 0200 0000 0015 8403 4953",
-                            IcDph = "SK2021681970",
-                            Ico = "35541784",
-                            Name = "Pobočka SSAKI pri KPI FEI TU v Košiciach",
-                            Phone = "+421/(0)55/602 4148",
-                            PostalCode = "040 01",
-                            Street = "Letná 9",
-                            Swift = "SUBASKBX"
-                        });
+                    b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Web.Domain.Models.Talk", b =>
+            modelBuilder.Entity("Web.Domain.Models.AccommodationBooking", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                    b.HasOne("Web.Domain.Models.AccommodationOption", "Option")
+                        .WithMany()
+                        .HasForeignKey("OptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.HasOne("Web.Domain.Models.Participant", "Participant")
+                        .WithMany()
+                        .HasForeignKey("ParticipantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Navigation("Option");
 
-                    b.Property<TimeOnly>("EndTime")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<TimeOnly>("StartTime")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<int>("ThemeId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ThemeId");
-
-                    b.ToTable("Talk");
+                    b.Navigation("Participant");
                 });
 
-            modelBuilder.Entity("Web.Domain.Models.Theme", b =>
+            modelBuilder.Entity("Web.Domain.Models.CateringOrder", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                    b.HasOne("Web.Domain.Models.Participant", "Participant")
+                        .WithMany()
+                        .HasForeignKey("ParticipantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Chair")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<TimeOnly>("EndTime")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<int>("SessionId")
-                        .HasColumnType("integer");
-
-                    b.Property<TimeOnly>("StartTime")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SessionId");
-
-                    b.ToTable("Theme");
+                    b.Navigation("Participant");
                 });
 
-            modelBuilder.Entity("Web.Domain.Models.Attendee", b =>
+            modelBuilder.Entity("Web.Domain.Models.CateringOrderItem", b =>
                 {
-                    b.HasOne("Web.Domain.Models.Customer", "Customer")
-                        .WithMany("Attendee")
-                        .HasForeignKey("CustomerId");
+                    b.HasOne("Web.Domain.Models.CateringOption", "Option")
+                        .WithMany()
+                        .HasForeignKey("OptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Customer");
+                    b.HasOne("Web.Domain.Models.CateringOrder", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Option");
+
+                    b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("Web.Domain.Models.Day", b =>
+            modelBuilder.Entity("Web.Domain.Models.ConferenceSettings", b =>
                 {
                     b.HasOne("Web.Domain.Models.Conference", "Conference")
-                        .WithMany("Day")
+                        .WithMany()
                         .HasForeignKey("ConferenceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -486,104 +787,103 @@ namespace Web.DataAccess.Migrations
 
             modelBuilder.Entity("Web.Domain.Models.Invoice", b =>
                 {
-                    b.HasOne("Web.Domain.Models.Customer", "Customer")
+                    b.HasOne("Web.Domain.Models.Conference", "Conference")
                         .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ConferenceId");
 
-                    b.HasOne("Web.Domain.Models.Supplier", "Supplier")
-                        .WithMany()
-                        .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("Supplier");
+                    b.Navigation("Conference");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.InvoiceItem", b =>
                 {
-                    b.HasOne("Web.Domain.Models.Attendee", "Attendee")
-                        .WithMany("InvoiceItem")
-                        .HasForeignKey("AttendeeId");
-
-                    b.Navigation("Attendee");
-                });
-
-            modelBuilder.Entity("Web.Domain.Models.PageContent", b =>
-                {
-                    b.HasOne("Web.Domain.Models.NavBarMenu", "NavBarMenu")
+                    b.HasOne("Web.Domain.Models.Invoice", "Invoice")
                         .WithMany()
-                        .HasForeignKey("NavBarMenuId")
+                        .HasForeignKey("InvoiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("NavBarMenu");
+                    b.Navigation("Invoice");
                 });
 
-            modelBuilder.Entity("Web.Domain.Models.Session", b =>
+            modelBuilder.Entity("Web.Domain.Models.InvoiceParticipant", b =>
                 {
-                    b.HasOne("Web.Domain.Models.Day", "Day")
-                        .WithMany("Session")
-                        .HasForeignKey("DayId")
+                    b.HasOne("Web.Domain.Models.Invoice", "Invoice")
+                        .WithMany()
+                        .HasForeignKey("InvoiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Day");
-                });
-
-            modelBuilder.Entity("Web.Domain.Models.Talk", b =>
-                {
-                    b.HasOne("Web.Domain.Models.Theme", "Theme")
-                        .WithMany("Talk")
-                        .HasForeignKey("ThemeId")
+                    b.HasOne("Web.Domain.Models.Participant", "Participant")
+                        .WithMany()
+                        .HasForeignKey("ParticipantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Theme");
+                    b.Navigation("Invoice");
+
+                    b.Navigation("Participant");
                 });
 
-            modelBuilder.Entity("Web.Domain.Models.Theme", b =>
+            modelBuilder.Entity("Web.Domain.Models.Participant", b =>
                 {
-                    b.HasOne("Web.Domain.Models.Session", "Session")
-                        .WithMany("Theme")
-                        .HasForeignKey("SessionId")
+                    b.HasOne("Web.Domain.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.Registration", b =>
+                {
+                    b.HasOne("Web.Domain.Models.Conference", "Conference")
+                        .WithMany()
+                        .HasForeignKey("ConferenceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Session");
+                    b.HasOne("Web.Domain.Models.Participant", "Participant")
+                        .WithMany()
+                        .HasForeignKey("ParticipantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conference");
+
+                    b.Navigation("Participant");
                 });
 
-            modelBuilder.Entity("Web.Domain.Models.Attendee", b =>
+            modelBuilder.Entity("Web.Domain.Models.ScheduleItem", b =>
                 {
-                    b.Navigation("InvoiceItem");
+                    b.HasOne("Web.Domain.Models.Conference", "Conference")
+                        .WithMany()
+                        .HasForeignKey("ConferenceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Web.Domain.Models.Speaker", "Speaker")
+                        .WithMany()
+                        .HasForeignKey("SpeakerId");
+
+                    b.Navigation("Conference");
+
+                    b.Navigation("Speaker");
                 });
 
-            modelBuilder.Entity("Web.Domain.Models.Conference", b =>
+            modelBuilder.Entity("Web.Domain.Models.Submission", b =>
                 {
-                    b.Navigation("Day");
-                });
+                    b.HasOne("Web.Domain.Models.Conference", "Conference")
+                        .WithMany()
+                        .HasForeignKey("ConferenceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-            modelBuilder.Entity("Web.Domain.Models.Customer", b =>
-                {
-                    b.Navigation("Attendee");
-                });
+                    b.HasOne("Web.Domain.Models.Participant", "Participant")
+                        .WithMany()
+                        .HasForeignKey("ParticipantId");
 
-            modelBuilder.Entity("Web.Domain.Models.Day", b =>
-                {
-                    b.Navigation("Session");
-                });
+                    b.Navigation("Conference");
 
-            modelBuilder.Entity("Web.Domain.Models.Session", b =>
-                {
-                    b.Navigation("Theme");
-                });
-
-            modelBuilder.Entity("Web.Domain.Models.Theme", b =>
-                {
-                    b.Navigation("Talk");
+                    b.Navigation("Participant");
                 });
 #pragma warning restore 612, 618
         }

@@ -13,10 +13,17 @@
     <ItemGroup>
         <PackageReference Include="AutoMapper" Version="12.0.1" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+        <PackageReference Include="FluentValidation" Version="11.11.0" />
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
         <PackageReference Include="Markdig" Version="0.37.0" />
         <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.3.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.9" />
         <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.2" />
         <PackageReference Include="QuestPDF" Version="2025.12.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="DTOs\" />
     </ItemGroup>
 
 </Project>

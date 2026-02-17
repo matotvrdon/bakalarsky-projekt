@@ -1,0 +1,17 @@
+using Web.Domain.Enums;
+
+namespace Web.Services.DTOs;
+
+public class SubmissionUpdateDto
+{
+    public required string Title { get; set; }
+    public required string Abstract { get; set; }
+    public required string Authors { get; set; }
+    public required string Email { get; set; }
+    public required string Affiliation { get; set; }
+    public required string Category { get; set; }
+    public string? Keywords { get; set; }
+    public SubmissionStatus Status { get; set; }
+    public bool WillPresent { get; set; }
+    public string? PaperFileUrl { get; set; }
+}
