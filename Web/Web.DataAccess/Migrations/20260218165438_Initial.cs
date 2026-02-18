@@ -57,11 +57,6 @@ namespace Web.DataAccess.Migrations
                     Affiliation = table.Column<string>(type: "text", nullable: true),
                     Country = table.Column<string>(type: "text", nullable: true),
                     RegistrationType = table.Column<int>(type: "integer", nullable: true),
-                    StudentStatus = table.Column<int>(type: "integer", nullable: true),
-                    StudentVerificationFilePath = table.Column<string>(type: "text", nullable: true),
-                    StudentVerificationOriginalFileName = table.Column<string>(type: "text", nullable: true),
-                    StudentVerificationContentType = table.Column<string>(type: "text", nullable: true),
-                    StudentVerificationUploadedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     ConferenceId = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -82,15 +77,45 @@ namespace Web.DataAccess.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "StudentVerifications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    FilePath = table.Column<string>(type: "text", nullable: true),
+                    OriginalFileName = table.Column<string>(type: "text", nullable: true),
+                    ContentType = table.Column<string>(type: "text", nullable: true),
+                    UploadedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ParticipantId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StudentVerifications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StudentVerifications_Participants_ParticipantId",
+                        column: x => x.ParticipantId,
+                        principalTable: "Participants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Participants_ConferenceId",
                 table: "Participants",
                 column: "ConferenceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Participants_UserId",
+                name: "IX_Participants_UserId_ConferenceId",
                 table: "Participants",
-                column: "UserId");
+                columns: new[] { "UserId", "ConferenceId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentVerifications_ParticipantId",
+                table: "StudentVerifications",
+                column: "ParticipantId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",
@@ -102,6 +127,9 @@ namespace Web.DataAccess.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "StudentVerifications");
+
             migrationBuilder.DropTable(
                 name: "Participants");
 

@@ -12,8 +12,8 @@ using Web.DataAccess.Data;
 namespace Web.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260218112428_s")]
-    partial class s
+    [Migration("20260218165438_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -92,7 +92,8 @@ namespace Web.DataAccess.Migrations
 
                     b.HasIndex("ConferenceId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "ConferenceId")
+                        .IsUnique();
 
                     b.ToTable("Participants");
                 });
@@ -153,6 +154,9 @@ namespace Web.DataAccess.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });
