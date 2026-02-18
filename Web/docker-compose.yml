@@ -24,6 +24,14 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: ${DEV_DB_CONNECTION_STRING}
+      Email__Host: ${DEV_EMAIL_HOST}
+      Email__Port: ${DEV_EMAIL_PORT:-587}
+      Email__UserName: ${DEV_EMAIL_USERNAME}
+      Email__Password: ${DEV_EMAIL_PASSWORD}
+      Email__FromAddress: ${DEV_EMAIL_FROM_ADDRESS}
+      Email__FromName: ${DEV_EMAIL_FROM_NAME}
+      Email__LoginUrl: ${DEV_EMAIL_LOGIN_URL}
+      Email__SecureSocketOption: ${DEV_EMAIL_SECURE_SOCKET_OPTION:-StartTls}
     ports:
       - "5001:8080"
 
@@ -38,6 +46,14 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Test
       ConnectionStrings__DefaultConnection: ${TEST_DB_CONNECTION_STRING}
+      Email__Host: ${TEST_EMAIL_HOST}
+      Email__Port: ${TEST_EMAIL_PORT:-587}
+      Email__UserName: ${TEST_EMAIL_USERNAME}
+      Email__Password: ${TEST_EMAIL_PASSWORD}
+      Email__FromAddress: ${TEST_EMAIL_FROM_ADDRESS}
+      Email__FromName: ${TEST_EMAIL_FROM_NAME}
+      Email__LoginUrl: ${TEST_EMAIL_LOGIN_URL}
+      Email__SecureSocketOption: ${TEST_EMAIL_SECURE_SOCKET_OPTION:-StartTls}
     ports:
       - "5002:8080"
 
@@ -52,6 +68,14 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: ${PROD_DB_CONNECTION_STRING}
+      Email__Host: ${PROD_EMAIL_HOST}
+      Email__Port: ${PROD_EMAIL_PORT:-587}
+      Email__UserName: ${PROD_EMAIL_USERNAME}
+      Email__Password: ${PROD_EMAIL_PASSWORD}
+      Email__FromAddress: ${PROD_EMAIL_FROM_ADDRESS}
+      Email__FromName: ${PROD_EMAIL_FROM_NAME}
+      Email__LoginUrl: ${PROD_EMAIL_LOGIN_URL}
+      Email__SecureSocketOption: ${PROD_EMAIL_SECURE_SOCKET_OPTION:-StartTls}
     ports:
       - "5003:8080"
 

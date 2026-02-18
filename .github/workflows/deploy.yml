@@ -173,6 +173,14 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           DATABASE_AUTO_MIGRATE: ${{ secrets.DATABASE_AUTO_MIGRATE }}
+          EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+          EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_FROM_ADDRESS: ${{ secrets.EMAIL_FROM_ADDRESS }}
+          EMAIL_FROM_NAME: ${{ secrets.EMAIL_FROM_NAME }}
+          EMAIL_LOGIN_URL: ${{ secrets.EMAIL_LOGIN_URL }}
+          EMAIL_SECURE_SOCKET_OPTION: ${{ secrets.EMAIL_SECURE_SOCKET_OPTION }}
         run: |
           export IMAGE_REPO="${IMAGE_REPO}"
           export IMAGE_TAG="${IMAGE_TAG}"
@@ -180,6 +188,14 @@ jobs:
           export POSTGRES_PASSWORD="${POSTGRES_PASSWORD}"
           export POSTGRES_DB="${POSTGRES_DB}"
           export DATABASE_AUTO_MIGRATE="${DATABASE_AUTO_MIGRATE:-false}"
+          export EMAIL_HOST="${EMAIL_HOST}"
+          export EMAIL_PORT="${EMAIL_PORT}"
+          export EMAIL_USERNAME="${EMAIL_USERNAME}"
+          export EMAIL_PASSWORD="${EMAIL_PASSWORD}"
+          export EMAIL_FROM_ADDRESS="${EMAIL_FROM_ADDRESS}"
+          export EMAIL_FROM_NAME="${EMAIL_FROM_NAME}"
+          export EMAIL_LOGIN_URL="${EMAIL_LOGIN_URL}"
+          export EMAIL_SECURE_SOCKET_OPTION="${EMAIL_SECURE_SOCKET_OPTION}"
           export COMPOSE_PROJECT_NAME="web-${DEPLOY_ENV_LOWER}"
           
           docker compose -f /srv/web-api/${COMPOSE_FILE} pull
