@@ -1,0 +1,5 @@
+/storage/
+/Web.Api/storage/
+/Web.sln.DotSettings
+.env
+.env.*

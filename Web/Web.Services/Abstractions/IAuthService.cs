@@ -1,3 +1,4 @@
+using Web.Domain.Models;
 using Web.Services.DTOs;
 
 namespace Web.Services.Abstractions;
@@ -5,4 +6,5 @@ namespace Web.Services.Abstractions;
 public interface IAuthService
 {
     Task<LoginResponseDto?> LoginAsync(LoginRequestDto dto);
+    Task<RegistrationSimpleResponseDto> RegisterAsync(RegistrationSimpleRequestDto dto);
 }

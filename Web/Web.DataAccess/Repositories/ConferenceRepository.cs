@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Web.DataAccess.Abstractions;
 using Web.DataAccess.Data;
-using Web.Domain.Abstractions;
 using Web.Domain.Models;
 
 namespace Web.DataAccess.Repositories;
