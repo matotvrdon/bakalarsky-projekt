@@ -19,11 +19,13 @@ public static class ServiceCollectionExtensions
 
         services.AddAutoMapper(typeof(MappingProfile).Assembly);
         services.AddValidatorsFromAssemblyContaining<LoginRequestDtoValidator>();
-
+        
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IConferenceService, ConferenceService>();
-
+        
+        services.AddTransient<IEmailService, EmailService>();
+        
         return services;
     }
 }

@@ -1,9 +1,9 @@
 using Laraue.EfCoreTriggers.PostgreSql.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Web.DataAccess.Abstractions;
 using Web.DataAccess.Data;
 using Web.DataAccess.Repositories;
-using Web.Domain.Abstractions;
 
 namespace Web.DataAccess.Extensions;
 
@@ -15,6 +15,7 @@ public static class DataAccessServiceCollectionExtension
         
         services.AddScoped<IAuthRepository, AuthRepository>();
         services.AddScoped<IConferenceRepository, ConferenceRepository>();
+        services.AddScoped<IParticipantRepository, ParticipantRepository>();
         
         return services;
     }

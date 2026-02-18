@@ -33,40 +33,14 @@ public class AuthController : ControllerBase
         return Ok(response);
     }
 
-    [HttpPost("register")]
+
+
+    [HttpPost("register-simple")]
     public async Task<IActionResult> Register([FromBody] RegistrationSimpleRequestDto dto)
     {
-        var normalizedEmail = dto.Email.Trim();
-        var exists = await _appDbContext.Users
-            .AsNoTracking()
-            .AnyAsync(x => x.Email == normalizedEmail);
-        if (exists)
-            return Conflict();
-
-        const string generatedPassword = "ahojahoj";
-        var user = new User
-        {
-            CreatedAt = DateTime.UtcNow,
-            Email = normalizedEmail,
-            Name = dto.FirstName + " " + dto.LastName,
-            Role = UserRole.Participant,
-            PasswordHash = string.Empty
-        };
-        user.PasswordHash = _passwordHasher.HashPassword(user, generatedPassword);
-
-        _appDbContext.Users.Add(user);
-        await _appDbContext.SaveChangesAsync();
-
-        return Ok(new
-        {
-            user = new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                Role = user.Role,
-                Name = user.Name
-            },
-            password = generatedPassword
-        });
+        var response = await _authService.RegisterAsync(dto);
+        if (response.MessageStatus == MessageStatus.Error)
+            return Conflict(response);
+        return Ok(response);
     }
 }

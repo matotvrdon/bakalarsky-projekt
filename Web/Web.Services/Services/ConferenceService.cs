@@ -1,5 +1,5 @@
 using AutoMapper;
-using Web.Domain.Abstractions;
+using Web.DataAccess.Abstractions;
 using Web.Domain.Models;
 using Web.Services.Abstractions;
 using Web.Services.DTOs;

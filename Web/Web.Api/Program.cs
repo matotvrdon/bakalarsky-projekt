@@ -2,13 +2,16 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Web.DataAccess.Data;
 using Web.IoC;
+using Web.Services.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation();
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
@@ -70,6 +73,17 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Informatics.Api v1"));
+
+var storageRoot = app.Configuration["FileStorage:RootPath"] ?? "storage";
+var resolvedStorageRoot = Path.IsPathRooted(storageRoot)
+    ? storageRoot
+    : Path.Combine(app.Environment.ContentRootPath, storageRoot);
+Directory.CreateDirectory(resolvedStorageRoot);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(resolvedStorageRoot),
+    RequestPath = "/storage"
+});
 
 var useHttpsRedirection = app.Configuration.GetValue<bool?>("HttpsRedirection:Enabled") ??
     app.Environment.IsProduction();
