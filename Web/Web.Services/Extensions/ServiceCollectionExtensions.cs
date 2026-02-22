@@ -23,6 +23,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IConferenceService, ConferenceService>();
+        services.AddScoped<IParticipantService, ParticipantService>();
+        services.AddScoped<IFileManagerService, FileManagerService>();
         
         services.AddTransient<IEmailService, EmailService>();
         

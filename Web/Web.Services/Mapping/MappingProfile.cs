@@ -22,5 +22,12 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id));
 
+        CreateMap<Participant, ParticipantDto>();
+        CreateMap<ParticipantUpdateDto, Participant>();
+
+        CreateMap<FileManagerCreateDto, FileManager>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.Participant, opt => opt.Ignore());
+        CreateMap<FileManager, FileManagerDto>();
     }
 }

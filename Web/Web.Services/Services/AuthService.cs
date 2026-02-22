@@ -6,6 +6,7 @@ using Web.Domain.Enums;
 using Web.Domain.Models;
 using Web.Services.Abstractions;
 using Web.Services.DTOs;
+using Web.Services.Exceptions;
 
 namespace Web.Services.Services;
 
@@ -60,12 +61,14 @@ public class AuthService : IAuthService
         _mapper.Map(user, participant);
         if (await _participantRepository.ExistsAsync(email, participant.ConferenceId))
         {
-            return new RegistrationSimpleResponseDto
+            var response = new RegistrationSimpleResponseDto
             {
                 Message = $"Email {email} už existuje na konferenciu {participant.ConferenceId}",
                 Email = email,
-                MessageStatus = MessageStatus.Error
+                
             };
+            
+            throw new RegistrationConflictException(response);
         }
         await _participantRepository.AddAsync(participant);
         if (!string.IsNullOrWhiteSpace(password))
@@ -78,7 +81,6 @@ public class AuthService : IAuthService
                 ? "Registrácia bola úspešná. Účet už existuje, prihláste sa existujúcimi údajmi."
                 : "Prihlasovacie údaje boli odoslané na email uvedený v registrácii",
             Email = user.Email,
-            MessageStatus = MessageStatus.Success
         };
     }
     

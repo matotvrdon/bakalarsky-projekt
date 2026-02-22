@@ -1,4 +1,5 @@
 using Web.Domain.Enums;
+using Web.Domain.Models;
 
 namespace Web.Services.DTOs;
 
@@ -11,10 +12,8 @@ public class ParticipantDto
     public string? Affiliation { get; set; }
     public string? Country { get; set; }
     public RegistrationType? RegistrationType { get; set; }
-    public StudentStatus? StudentStatus { get; set; }
-    public string? StudentVerificationOriginalFileName { get; set; }
-    public string? StudentVerificationContentType { get; set; }
-    public DateTime? StudentVerificationUploadedAt { get; set; }
+    public bool? IsStudent { get; set; }
+    public List<FileManagerDto> FileManagers { get; set; }
     public int UserId { get; set; }
     public int ConferenceId { get; set; }
 }

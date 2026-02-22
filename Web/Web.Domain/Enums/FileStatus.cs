@@ -1,9 +1,7 @@
 namespace Web.Domain.Enums;
 
-public enum StudentStatus
+public enum FileStatus
 {
-    NotSelected,
-    SelectedNotSend,
     WaitingForApproval,
     Approved,
     Rejected

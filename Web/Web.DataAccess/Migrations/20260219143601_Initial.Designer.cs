@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Web.DataAccess.Data;
@@ -11,9 +12,11 @@ using Web.DataAccess.Data;
 namespace Web.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260219143601_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,51 +54,6 @@ namespace Web.DataAccess.Migrations
                     b.ToTable("Conferences");
                 });
 
-            modelBuilder.Entity("Web.Domain.Models.FileManager", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("FileStatus")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("FileType")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("OriginalFileName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("ParticipantId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("ReviewedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("ReviewedByUserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ParticipantId");
-
-                    b.ToTable("FileManagers");
-                });
-
             modelBuilder.Entity("Web.Domain.Models.Participant", b =>
                 {
                     b.Property<int>("Id")
@@ -117,9 +75,6 @@ namespace Web.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsStudent")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -128,6 +83,9 @@ namespace Web.DataAccess.Migrations
                         .HasColumnType("text");
 
                     b.Property<int?>("RegistrationType")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("StudentStatus")
                         .HasColumnType("integer");
 
                     b.Property<int>("UserId")
@@ -141,6 +99,53 @@ namespace Web.DataAccess.Migrations
                         .IsUnique();
 
                     b.ToTable("Participants");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.StudentVerification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContentType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FilePath")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OriginalFileName")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ParticipantId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RejectReason")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ReviewedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UploadedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParticipantId")
+                        .IsUnique();
+
+                    b.HasIndex("ReviewedByUserId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("StudentVerifications");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.User", b =>
@@ -173,17 +178,6 @@ namespace Web.DataAccess.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Web.Domain.Models.FileManager", b =>
-                {
-                    b.HasOne("Web.Domain.Models.Participant", "Participant")
-                        .WithMany("FileManagers")
-                        .HasForeignKey("ParticipantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Participant");
-                });
-
             modelBuilder.Entity("Web.Domain.Models.Participant", b =>
                 {
                     b.HasOne("Web.Domain.Models.Conference", "Conference")
@@ -203,9 +197,22 @@ namespace Web.DataAccess.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Web.Domain.Models.Participant", b =>
+            modelBuilder.Entity("Web.Domain.Models.StudentVerification", b =>
                 {
-                    b.Navigation("FileManagers");
+                    b.HasOne("Web.Domain.Models.Participant", "Participant")
+                        .WithMany()
+                        .HasForeignKey("ParticipantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Web.Domain.Models.User", "ReviewedByUser")
+                        .WithMany()
+                        .HasForeignKey("ReviewedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Participant");
+
+                    b.Navigation("ReviewedByUser");
                 });
 #pragma warning restore 612, 618
         }
