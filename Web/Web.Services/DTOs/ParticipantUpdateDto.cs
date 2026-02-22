@@ -11,7 +11,7 @@ public class ParticipantUpdateDto
     public string? Affiliation { get; set; }
     public string? Country { get; set; }
     public RegistrationType? RegistrationType { get; set; }
-    public StudentStatus? StudentStatus { get; set; }
+    public bool? IsStudent { get; set; }
     public int UserId { get; set; }
     public int ConferenceId { get; set; }
 }

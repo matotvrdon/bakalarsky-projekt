@@ -12,7 +12,7 @@ public class AppDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Conference> Conferences => Set<Conference>();
     public DbSet<Participant> Participants => Set<Participant>();
-    public DbSet<StudentVerification> StudentVerifications => Set<StudentVerification>();
+    public DbSet<FileManager> FileManagers => Set<FileManager>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

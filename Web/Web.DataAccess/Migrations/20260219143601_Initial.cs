@@ -57,6 +57,7 @@ namespace Web.DataAccess.Migrations
                     Affiliation = table.Column<string>(type: "text", nullable: true),
                     Country = table.Column<string>(type: "text", nullable: true),
                     RegistrationType = table.Column<int>(type: "integer", nullable: true),
+                    StudentStatus = table.Column<int>(type: "integer", nullable: true),
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     ConferenceId = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -88,6 +89,9 @@ namespace Web.DataAccess.Migrations
                     OriginalFileName = table.Column<string>(type: "text", nullable: true),
                     ContentType = table.Column<string>(type: "text", nullable: true),
                     UploadedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ReviewedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ReviewedByUserId = table.Column<int>(type: "integer", nullable: true),
+                    RejectReason = table.Column<string>(type: "text", nullable: true),
                     ParticipantId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -99,6 +103,12 @@ namespace Web.DataAccess.Migrations
                         principalTable: "Participants",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_StudentVerifications_Users_ReviewedByUserId",
+                        column: x => x.ReviewedByUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateIndex(
@@ -115,7 +125,18 @@ namespace Web.DataAccess.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_StudentVerifications_ParticipantId",
                 table: "StudentVerifications",
-                column: "ParticipantId");
+                column: "ParticipantId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentVerifications_ReviewedByUserId",
+                table: "StudentVerifications",
+                column: "ReviewedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentVerifications_Status",
+                table: "StudentVerifications",
+                column: "Status");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",

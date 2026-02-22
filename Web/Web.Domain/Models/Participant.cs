@@ -13,10 +13,9 @@ public class Participant
     
     
     public RegistrationType? RegistrationType { get; set; }
+    public bool? IsStudent { get; set; }
     
-    
-    // public int StudentVerificationId { get; set; }
-    // public StudentVerification? StudentVerification { get; set; }
+    public List<FileManager> FileManagers { get; set; }
     public int UserId { get; set; }
     public User? User { get; set; }
     public int ConferenceId { get; set; }

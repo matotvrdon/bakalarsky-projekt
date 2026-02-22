@@ -6,6 +6,7 @@ using Web.Domain.Enums;
 using Web.Domain.Models;
 using Web.Services.Abstractions;
 using Web.Services.DTOs;
+using Web.Services.Exceptions;
 
 namespace Web.Api.Controllers;
 
@@ -38,9 +39,14 @@ public class AuthController : ControllerBase
     [HttpPost("register-simple")]
     public async Task<IActionResult> Register([FromBody] RegistrationSimpleRequestDto dto)
     {
-        var response = await _authService.RegisterAsync(dto);
-        if (response.MessageStatus == MessageStatus.Error)
-            return Conflict(response);
-        return Ok(response);
+        try
+        {
+            var result = await _authService.RegisterAsync(dto);
+            return Ok(result);
+        }
+        catch (RegistrationConflictException ex)
+        {
+            return Conflict(ex.Message);
+        }
     }
 }
