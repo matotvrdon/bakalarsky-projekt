@@ -12,6 +12,7 @@ public class ParticipantUpdateDto
     public string? Country { get; set; }
     public RegistrationType? RegistrationType { get; set; }
     public bool? IsStudent { get; set; }
+    public bool? IsPresenting { get; set; }
     public int UserId { get; set; }
     public int ConferenceId { get; set; }
 }

@@ -27,7 +27,7 @@ public class AuthRepository : IAuthRepository
 
     public async Task<User> AddAsync(User user)
     {
-        await  _dbContext.Users.AddAsync(user);
+        await _dbContext.Users.AddAsync(user);
         await _dbContext.SaveChangesAsync();
         return user;
     }
