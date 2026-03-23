@@ -17,6 +17,7 @@ public static class DataAccessServiceCollectionExtension
         services.AddScoped<IConferenceRepository, ConferenceRepository>();
         services.AddScoped<IParticipantRepository, ParticipantRepository>();
         services.AddScoped<IFileManagerRepository, FileManagerRepository>();
+        services.AddScoped<ISubmissionRepository, SubmissionRepository>();
         
         return services;
     }

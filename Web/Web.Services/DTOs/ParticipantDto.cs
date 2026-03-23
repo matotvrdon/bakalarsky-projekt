@@ -14,7 +14,7 @@ public class ParticipantDto
     public RegistrationType? RegistrationType { get; set; }
     public bool? IsStudent { get; set; }
     public bool? IsPresenting { get; set; }
-    public List<FileManagerDto> FileManagers { get; set; }
-    public int UserId { get; set; }
+    public List<FileManagerDto> FileManagers { get; set; } = [];
+    public int? UserId { get; set; }
     public int ConferenceId { get; set; }
 }

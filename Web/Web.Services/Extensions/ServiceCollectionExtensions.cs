@@ -25,6 +25,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IConferenceService, ConferenceService>();
         services.AddScoped<IParticipantService, ParticipantService>();
         services.AddScoped<IFileManagerService, FileManagerService>();
+        services.AddScoped<ISubmissionService, SubmissionService>();
         
         services.AddTransient<IEmailService, EmailService>();
         
