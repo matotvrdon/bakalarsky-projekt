@@ -13,7 +13,8 @@ public class ParticipantDto
     public string? Country { get; set; }
     public RegistrationType? RegistrationType { get; set; }
     public bool? IsStudent { get; set; }
-    public List<FileManagerDto> FileManagers { get; set; }
-    public int UserId { get; set; }
+    public bool? IsPresenting { get; set; }
+    public List<FileManagerDto> FileManagers { get; set; } = [];
+    public int? UserId { get; set; }
     public int ConferenceId { get; set; }
 }

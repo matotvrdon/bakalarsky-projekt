@@ -42,8 +42,8 @@ public class ParticipantRepository : IParticipantRepository
     public async Task<bool> ExistsAsync(string email, int conferenceId)
     {
         return await _dbContext.Participants
-            .Include(p=> p.User)
-            .AnyAsync(p => p.User.Email == email && p.ConferenceId == conferenceId);
+            .Include(p => p.User)
+            .AnyAsync(p => p.User != null && p.User.Email == email && p.ConferenceId == conferenceId);
     }
 
     public async Task<Participant> AddAsync(Participant participant)
