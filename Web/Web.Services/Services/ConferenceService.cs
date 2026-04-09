@@ -39,8 +39,6 @@ public class ConferenceService : IConferenceService
     public async Task<ConferenceDto> CreateAsync(ConferenceCreateDto dto)
     {
         var conference = _mapper.Map<Conference>(dto);
-        conference.StartDate = EnsureUtc(conference.StartDate);
-        conference.EndDate = EnsureUtc(conference.EndDate);
         conference.IsActive = true;
         await _conferenceRepository.AddAsync(conference);
         return _mapper.Map<ConferenceDto>(conference);
@@ -52,8 +50,6 @@ public class ConferenceService : IConferenceService
         if (conference == null)
             return null;
         _mapper.Map(dto, conference);
-        conference.StartDate = EnsureUtc(conference.StartDate);
-        conference.EndDate = EnsureUtc(conference.EndDate);
         await _conferenceRepository.UpdateAsync(conference);
         return _mapper.Map<ConferenceDto>(conference);
     }
@@ -67,13 +63,4 @@ public class ConferenceService : IConferenceService
         return true;
     }
 
-    private static DateTime EnsureUtc(DateTime value)
-    {
-        return value.Kind switch
-        {
-            DateTimeKind.Utc => value,
-            DateTimeKind.Local => value.ToUniversalTime(),
-            _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
-        };
-    }
 }

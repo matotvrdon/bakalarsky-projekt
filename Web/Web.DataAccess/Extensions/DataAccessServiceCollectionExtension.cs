@@ -15,6 +15,7 @@ public static class DataAccessServiceCollectionExtension
         
         services.AddScoped<IAuthRepository, AuthRepository>();
         services.AddScoped<IConferenceRepository, ConferenceRepository>();
+        services.AddScoped<IConferenceSettingsRepository, ConferenceSettingsRepository>();
         services.AddScoped<IParticipantRepository, ParticipantRepository>();
         services.AddScoped<IFileManagerRepository, FileManagerRepository>();
         services.AddScoped<ISubmissionRepository, SubmissionRepository>();

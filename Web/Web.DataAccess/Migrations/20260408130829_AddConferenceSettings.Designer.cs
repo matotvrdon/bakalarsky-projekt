@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Web.DataAccess.Data;
@@ -11,9 +12,11 @@ using Web.DataAccess.Data;
 namespace Web.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260408130829_AddConferenceSettings")]
+    partial class AddConferenceSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,8 +33,8 @@ namespace Web.DataAccess.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateOnly>("EndDate")
-                        .HasColumnType("date");
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -43,31 +46,12 @@ namespace Web.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateOnly>("StartDate")
-                        .HasColumnType("date");
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
                     b.ToTable("Conferences");
-                });
-
-            modelBuilder.Entity("Web.Domain.Models.ConferenceSettings", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ConferenceId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ConferenceId")
-                        .IsUnique();
-
-                    b.ToTable("ConferenceSettings");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.FileManager", b =>
@@ -113,33 +97,6 @@ namespace Web.DataAccess.Migrations
                     b.HasIndex("ParticipantId");
 
                     b.ToTable("FileManagers");
-                });
-
-            modelBuilder.Entity("Web.Domain.Models.ImportantDates", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ConferenceSettingsId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ImportantDatesStatus")
-                        .HasColumnType("integer");
-
-                    b.Property<DateOnly>("NormalDate")
-                        .HasColumnType("date");
-
-                    b.Property<DateOnly?>("UpdatedDate")
-                        .HasColumnType("date");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ConferenceSettingsId");
-
-                    b.ToTable("ImportantDates");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.Participant", b =>
@@ -264,15 +221,54 @@ namespace Web.DataAccess.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Web.Domain.Models.ConferenceSettings", b =>
+            modelBuilder.Entity("Web.Domain.Models.Conference", b =>
                 {
-                    b.HasOne("Web.Domain.Models.Conference", "Conference")
-                        .WithOne("Settings")
-                        .HasForeignKey("Web.Domain.Models.ConferenceSettings", "ConferenceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.OwnsOne("Web.Domain.Models.ConferenceSettings", "Settings", b1 =>
+                        {
+                            b1.Property<int>("ConferenceId")
+                                .HasColumnType("integer");
 
-                    b.Navigation("Conference");
+                            b1.HasKey("ConferenceId");
+
+                            b1.ToTable("Conferences");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ConferenceId");
+
+                            b1.OwnsMany("Web.Domain.Models.ImportantDates", "ImportantDates", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("integer");
+
+                                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b2.Property<int>("Id"));
+
+                                    b2.Property<int>("ConferenceId")
+                                        .HasColumnType("integer");
+
+                                    b2.Property<int>("ImportantDatesStatus")
+                                        .HasColumnType("integer");
+
+                                    b2.Property<DateOnly>("NormalDate")
+                                        .HasColumnType("date");
+
+                                    b2.Property<DateOnly?>("UpdatedDate")
+                                        .HasColumnType("date");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("ConferenceId");
+
+                                    b2.ToTable("ConferenceImportantDates", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ConferenceId");
+                                });
+
+                            b1.Navigation("ImportantDates");
+                        });
+
+                    b.Navigation("Settings");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.FileManager", b =>
@@ -284,17 +280,6 @@ namespace Web.DataAccess.Migrations
                         .IsRequired();
 
                     b.Navigation("Participant");
-                });
-
-            modelBuilder.Entity("Web.Domain.Models.ImportantDates", b =>
-                {
-                    b.HasOne("Web.Domain.Models.ConferenceSettings", "ConferenceSettings")
-                        .WithMany("ImportantDates")
-                        .HasForeignKey("ConferenceSettingsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ConferenceSettings");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.Participant", b =>
@@ -332,16 +317,6 @@ namespace Web.DataAccess.Migrations
                     b.Navigation("Conference");
 
                     b.Navigation("Participant");
-                });
-
-            modelBuilder.Entity("Web.Domain.Models.Conference", b =>
-                {
-                    b.Navigation("Settings");
-                });
-
-            modelBuilder.Entity("Web.Domain.Models.ConferenceSettings", b =>
-                {
-                    b.Navigation("ImportantDates");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.Participant", b =>

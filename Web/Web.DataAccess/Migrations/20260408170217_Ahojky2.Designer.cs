@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Web.DataAccess.Data;
@@ -11,9 +12,11 @@ using Web.DataAccess.Data;
 namespace Web.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260408170217_Ahojky2")]
+    partial class Ahojky2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -123,7 +126,7 @@ namespace Web.DataAccess.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ConferenceSettingsId")
+                    b.Property<int?>("ConferenceSettingsId")
                         .HasColumnType("integer");
 
                     b.Property<int>("ImportantDatesStatus")
@@ -288,13 +291,9 @@ namespace Web.DataAccess.Migrations
 
             modelBuilder.Entity("Web.Domain.Models.ImportantDates", b =>
                 {
-                    b.HasOne("Web.Domain.Models.ConferenceSettings", "ConferenceSettings")
+                    b.HasOne("Web.Domain.Models.ConferenceSettings", null)
                         .WithMany("ImportantDates")
-                        .HasForeignKey("ConferenceSettingsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ConferenceSettings");
+                        .HasForeignKey("ConferenceSettingsId");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.Participant", b =>

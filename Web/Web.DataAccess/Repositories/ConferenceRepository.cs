@@ -17,6 +17,8 @@ public class ConferenceRepository : IConferenceRepository
     public async Task<Conference?> GetByIdAsync(int id)
     {
         return await _dbContext.Conferences
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.ImportantDates)
             .AsNoTracking()
             .FirstOrDefaultAsync(conference => conference.Id == id);
     }
@@ -24,6 +26,8 @@ public class ConferenceRepository : IConferenceRepository
     public async Task<List<Conference>> GetAllAsync()
     {
         return await _dbContext.Conferences
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.ImportantDates)
             .AsNoTracking()
             .ToListAsync();
     }
@@ -31,6 +35,8 @@ public class ConferenceRepository : IConferenceRepository
     public async Task<List<Conference>> GetActiveAsync()
     {
         return await  _dbContext.Conferences
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.ImportantDates)
             .AsNoTracking()
             .Where(conf => conf.IsActive)
             .ToListAsync();
@@ -51,7 +57,24 @@ public class ConferenceRepository : IConferenceRepository
 
     public async Task DeleteAsync(Conference conference)
     {
-        _dbContext.Conferences.Remove(conference);
+        var conferenceToDelete = await _dbContext.Conferences
+            .Include(item => item.Settings)
+            .ThenInclude(settings => settings!.ImportantDates)
+            .FirstOrDefaultAsync(item => item.Id == conference.Id);
+        if (conferenceToDelete == null)
+            return;
+
+        if (conferenceToDelete.Settings?.ImportantDates is { Count: > 0 })
+        {
+            _dbContext.ImportantDates.RemoveRange(conferenceToDelete.Settings.ImportantDates);
+        }
+
+        if (conferenceToDelete.Settings != null)
+        {
+            _dbContext.ConferenceSettings.Remove(conferenceToDelete.Settings);
+        }
+
+        _dbContext.Conferences.Remove(conferenceToDelete);
         await _dbContext.SaveChangesAsync();
     }
 

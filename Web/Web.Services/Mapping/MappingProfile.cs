@@ -14,6 +14,14 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ParticipantsCount, opt => opt.Ignore());
         CreateMap<ConferenceCreateDto, Conference>();
         CreateMap<ConferenceUpdateDto, Conference>();
+        CreateMap<ConferenceSettingsCreateDto, ConferenceSettings>();
+        CreateMap<ConferenceSettingsUpdateDto, ConferenceSettings>();
+        CreateMap<ConferenceSettings, ConferenceSettingsDto>();
+        CreateMap<ImportantDatesUpdateDto, ImportantDates>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceSettingsId, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceSettings, opt => opt.Ignore());
+        CreateMap<ImportantDates, ImportantDatesDto>();
 
         CreateMap<RegistrationSimpleRequestDto, Participant>()
             .ForMember(dest => dest.Id, opt => opt.Ignore());
