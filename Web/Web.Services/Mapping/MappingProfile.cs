@@ -17,11 +17,32 @@ public class MappingProfile : Profile
         CreateMap<ConferenceSettingsCreateDto, ConferenceSettings>();
         CreateMap<ConferenceSettingsUpdateDto, ConferenceSettings>();
         CreateMap<ConferenceSettings, ConferenceSettingsDto>();
+        CreateMap<ConferenceEntryCreateDto, ConferenceEntry>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceSettingsId, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceSettings, opt => opt.Ignore());
+        CreateMap<ConferenceEntry, ConferenceEntryDto>();
         CreateMap<ImportantDatesUpdateDto, ImportantDates>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.ConferenceSettingsId, opt => opt.Ignore())
             .ForMember(dest => dest.ConferenceSettings, opt => opt.Ignore());
         CreateMap<ImportantDates, ImportantDatesDto>();
+        CreateMap<FoodOptionsCreateDto, FoodOptions>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceSettingsId, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceSettings, opt => opt.Ignore());
+        CreateMap<FoodOptions, FoodOptionsDto>();
+        CreateMap<BookingOptionsCreateDto, BookingOptions>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceSettingsId, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceSettings, opt => opt.Ignore());
+        CreateMap<BookingOptions, BookingOptionsDto>();
+        CreateMap<ProgramDay, ProgramDayDto>();
+        CreateMap<ProgramItem, ProgramItemDto>()
+            .ForMember(dest => dest.Sessions, opt => opt.MapFrom(src => src.ProgramSessions));
+        CreateMap<ProgramSession, ProgramSessionDto>()
+            .ForMember(dest => dest.Presentations, opt => opt.MapFrom(src => src.ProgramPresentations));
+        CreateMap<ProgramPresentation, ProgramPresentationDto>();
 
         CreateMap<RegistrationSimpleRequestDto, Participant>()
             .ForMember(dest => dest.Id, opt => opt.Ignore());
@@ -35,7 +56,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id));
 
         CreateMap<Participant, ParticipantDto>();
-        CreateMap<ParticipantUpdateDto, Participant>();
+        CreateMap<ParticipantUpdateDto, Participant>()
+            .ForMember(dest => dest.ConferenceEntry, opt => opt.Ignore());
 
         CreateMap<FileManagerCreateDto, FileManager>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())

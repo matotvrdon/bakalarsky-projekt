@@ -19,6 +19,17 @@ public class ConferenceRepository : IConferenceRepository
         return await _dbContext.Conferences
             .Include(conference => conference.Settings)
             .ThenInclude(settings => settings!.ImportantDates)
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.ConferenceEntries)
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.FoodOptions)
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.BookingOptions)
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.ProgramDays)
+            .ThenInclude(day => day.ProgramItems)
+            .ThenInclude(item => item.ProgramSessions)
+            .ThenInclude(session => session.ProgramPresentations)
             .AsNoTracking()
             .FirstOrDefaultAsync(conference => conference.Id == id);
     }
@@ -28,6 +39,17 @@ public class ConferenceRepository : IConferenceRepository
         return await _dbContext.Conferences
             .Include(conference => conference.Settings)
             .ThenInclude(settings => settings!.ImportantDates)
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.ConferenceEntries)
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.FoodOptions)
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.BookingOptions)
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.ProgramDays)
+            .ThenInclude(day => day.ProgramItems)
+            .ThenInclude(item => item.ProgramSessions)
+            .ThenInclude(session => session.ProgramPresentations)
             .AsNoTracking()
             .ToListAsync();
     }
@@ -37,6 +59,17 @@ public class ConferenceRepository : IConferenceRepository
         return await  _dbContext.Conferences
             .Include(conference => conference.Settings)
             .ThenInclude(settings => settings!.ImportantDates)
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.ConferenceEntries)
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.FoodOptions)
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.BookingOptions)
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.ProgramDays)
+            .ThenInclude(day => day.ProgramItems)
+            .ThenInclude(item => item.ProgramSessions)
+            .ThenInclude(session => session.ProgramPresentations)
             .AsNoTracking()
             .Where(conf => conf.IsActive)
             .ToListAsync();
@@ -60,6 +93,14 @@ public class ConferenceRepository : IConferenceRepository
         var conferenceToDelete = await _dbContext.Conferences
             .Include(item => item.Settings)
             .ThenInclude(settings => settings!.ImportantDates)
+            .Include(item => item.Settings)
+            .ThenInclude(settings => settings!.ConferenceEntries)
+            .Include(item => item.Settings)
+            .ThenInclude(settings => settings!.FoodOptions)
+            .Include(item => item.Settings)
+            .ThenInclude(settings => settings!.BookingOptions)
+            .Include(item => item.Settings)
+            .ThenInclude(settings => settings!.ProgramDays)
             .FirstOrDefaultAsync(item => item.Id == conference.Id);
         if (conferenceToDelete == null)
             return;

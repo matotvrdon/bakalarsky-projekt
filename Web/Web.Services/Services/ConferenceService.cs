@@ -10,11 +10,16 @@ public class ConferenceService : IConferenceService
 {
     private readonly IConferenceRepository _conferenceRepository;
     private readonly IMapper _mapper;
-    
-    public ConferenceService(IConferenceRepository conferenceRepository, IMapper mapper)
+    private readonly IProgramPdfGenerator _programPdfGenerator;
+
+    public ConferenceService(
+        IConferenceRepository conferenceRepository,
+        IMapper mapper,
+        IProgramPdfGenerator programPdfGenerator)
     {
         _conferenceRepository = conferenceRepository;
         _mapper = mapper;
+        _programPdfGenerator = programPdfGenerator;
     }
 
     public async Task<List<ConferenceDto>> GetAllAsync()
@@ -34,6 +39,27 @@ public class ConferenceService : IConferenceService
         var conference = await _conferenceRepository.GetByIdAsync(id);
         
         return conference == null ? null : _mapper.Map<ConferenceDto>(conference);
+    }
+
+    public async Task<(byte[] Content, string FileName)?> GenerateProgramPdfAsync(int id)
+    {
+        var conference = await _conferenceRepository.GetByIdAsync(id);
+        if (conference?.Settings == null)
+        {
+            return null;
+        }
+
+        conference.Settings.Conference = conference;
+
+        var fileNameBase = string.IsNullOrWhiteSpace(conference.Name)
+            ? "program-konferencie"
+            : conference.Name.Trim().Replace(" ", "-");
+
+        var pdfBytes = _programPdfGenerator.GenerateProgramPdf(
+            conference.Settings,
+            conference.Settings.ProgramDays ?? []);
+
+        return (pdfBytes, $"{fileNameBase}-program.pdf");
     }
 
     public async Task<ConferenceDto> CreateAsync(ConferenceCreateDto dto)

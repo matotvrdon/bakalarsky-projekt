@@ -11,8 +11,9 @@ public class Participant
     public string? Affiliation { get; set; }
     public string? Country { get; set; }
     
+    public int? ConferenceEntryId { get; set; }
+    public ConferenceEntry? ConferenceEntry { get; set; }
     
-    public RegistrationType? RegistrationType { get; set; }
     public bool? IsStudent { get; set; }
     public bool? IsPresenting { get; set; }
     

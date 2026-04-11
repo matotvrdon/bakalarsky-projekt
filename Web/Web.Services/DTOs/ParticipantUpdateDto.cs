@@ -1,5 +1,3 @@
-using Web.Domain.Enums;
-
 namespace Web.Services.DTOs;
 
 public class ParticipantUpdateDto
@@ -10,7 +8,7 @@ public class ParticipantUpdateDto
     public string? Phone { get; set; }
     public string? Affiliation { get; set; }
     public string? Country { get; set; }
-    public RegistrationType? RegistrationType { get; set; }
+    public int? ConferenceEntryId { get; set; }
     public bool? IsStudent { get; set; }
     public bool? IsPresenting { get; set; }
     public int UserId { get; set; }

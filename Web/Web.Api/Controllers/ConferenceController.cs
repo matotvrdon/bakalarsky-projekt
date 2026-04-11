@@ -38,6 +38,16 @@ public class ConferenceController : ControllerBase
         return Ok(conference);
     }
 
+    [HttpGet("{id:int}/program/pdf")]
+    public async Task<IActionResult> DownloadProgramPdf(int id)
+    {
+        var programPdf = await _conferenceService.GenerateProgramPdfAsync(id);
+        if (programPdf == null)
+            return NotFound();
+
+        return File(programPdf.Value.Content, "application/pdf", programPdf.Value.FileName);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ConferenceCreateDto dto)
     {

@@ -22,6 +22,41 @@ namespace Web.DataAccess.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Web.Domain.Models.BookingOptions", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConferenceSettingsId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<float>("Price")
+                        .HasColumnType("real");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConferenceSettingsId");
+
+                    b.ToTable("BookingOptions");
+                });
+
             modelBuilder.Entity("Web.Domain.Models.Conference", b =>
                 {
                     b.Property<int>("Id")
@@ -29,6 +64,10 @@ namespace Web.DataAccess.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateOnly>("EndDate")
                         .HasColumnType("date");
@@ -49,6 +88,31 @@ namespace Web.DataAccess.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Conferences");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ConferenceEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConferenceSettingsId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<float>("Price")
+                        .HasColumnType("real");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConferenceSettingsId");
+
+                    b.ToTable("ConferenceEntries");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.ConferenceSettings", b =>
@@ -115,6 +179,41 @@ namespace Web.DataAccess.Migrations
                     b.ToTable("FileManagers");
                 });
 
+            modelBuilder.Entity("Web.Domain.Models.FoodOptions", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConferenceSettingsId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("FoodOptionsType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<float>("Price")
+                        .HasColumnType("real");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConferenceSettingsId");
+
+                    b.ToTable("FoodOptions");
+                });
+
             modelBuilder.Entity("Web.Domain.Models.ImportantDates", b =>
                 {
                     b.Property<int>("Id")
@@ -128,6 +227,10 @@ namespace Web.DataAccess.Migrations
 
                     b.Property<int>("ImportantDatesStatus")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateOnly>("NormalDate")
                         .HasColumnType("date");
@@ -153,6 +256,9 @@ namespace Web.DataAccess.Migrations
                     b.Property<string>("Affiliation")
                         .HasColumnType("text");
 
+                    b.Property<int?>("ConferenceEntryId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("ConferenceId")
                         .HasColumnType("integer");
 
@@ -176,13 +282,12 @@ namespace Web.DataAccess.Migrations
                     b.Property<string>("Phone")
                         .HasColumnType("text");
 
-                    b.Property<int?>("RegistrationType")
-                        .HasColumnType("integer");
-
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ConferenceEntryId");
 
                     b.HasIndex("ConferenceId");
 
@@ -191,6 +296,146 @@ namespace Web.DataAccess.Migrations
                         .HasFilter("\"UserId\" IS NOT NULL");
 
                     b.ToTable("Participants");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ProgramDay", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConferenceSettingsId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConferenceSettingsId");
+
+                    b.ToTable("ProgramDays");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ProgramItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Chair")
+                        .HasColumnType("text");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<string>("Location")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProgramDayId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Speaker")
+                        .HasColumnType("text");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProgramDayId");
+
+                    b.ToTable("ProgramItems");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ProgramPresentation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Authors")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProgramSessionId")
+                        .HasColumnType("integer");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProgramSessionId");
+
+                    b.ToTable("ProgramPresentations");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ProgramSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Chair")
+                        .HasColumnType("text");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProgramItemId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SessionName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProgramItemId");
+
+                    b.ToTable("ProgramSessions");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.Submission", b =>
@@ -264,6 +509,28 @@ namespace Web.DataAccess.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Web.Domain.Models.BookingOptions", b =>
+                {
+                    b.HasOne("Web.Domain.Models.ConferenceSettings", "ConferenceSettings")
+                        .WithMany("BookingOptions")
+                        .HasForeignKey("ConferenceSettingsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ConferenceSettings");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ConferenceEntry", b =>
+                {
+                    b.HasOne("Web.Domain.Models.ConferenceSettings", "ConferenceSettings")
+                        .WithMany("ConferenceEntries")
+                        .HasForeignKey("ConferenceSettingsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ConferenceSettings");
+                });
+
             modelBuilder.Entity("Web.Domain.Models.ConferenceSettings", b =>
                 {
                     b.HasOne("Web.Domain.Models.Conference", "Conference")
@@ -286,6 +553,17 @@ namespace Web.DataAccess.Migrations
                     b.Navigation("Participant");
                 });
 
+            modelBuilder.Entity("Web.Domain.Models.FoodOptions", b =>
+                {
+                    b.HasOne("Web.Domain.Models.ConferenceSettings", "ConferenceSettings")
+                        .WithMany("FoodOptions")
+                        .HasForeignKey("ConferenceSettingsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ConferenceSettings");
+                });
+
             modelBuilder.Entity("Web.Domain.Models.ImportantDates", b =>
                 {
                     b.HasOne("Web.Domain.Models.ConferenceSettings", "ConferenceSettings")
@@ -299,6 +577,11 @@ namespace Web.DataAccess.Migrations
 
             modelBuilder.Entity("Web.Domain.Models.Participant", b =>
                 {
+                    b.HasOne("Web.Domain.Models.ConferenceEntry", "ConferenceEntry")
+                        .WithMany()
+                        .HasForeignKey("ConferenceEntryId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Web.Domain.Models.Conference", "Conference")
                         .WithMany()
                         .HasForeignKey("ConferenceId")
@@ -312,7 +595,53 @@ namespace Web.DataAccess.Migrations
 
                     b.Navigation("Conference");
 
+                    b.Navigation("ConferenceEntry");
+
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ProgramDay", b =>
+                {
+                    b.HasOne("Web.Domain.Models.ConferenceSettings", "ConferenceSettings")
+                        .WithMany("ProgramDays")
+                        .HasForeignKey("ConferenceSettingsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ConferenceSettings");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ProgramItem", b =>
+                {
+                    b.HasOne("Web.Domain.Models.ProgramDay", "ProgramDay")
+                        .WithMany("ProgramItems")
+                        .HasForeignKey("ProgramDayId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProgramDay");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ProgramPresentation", b =>
+                {
+                    b.HasOne("Web.Domain.Models.ProgramSession", "ProgramSession")
+                        .WithMany("ProgramPresentations")
+                        .HasForeignKey("ProgramSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProgramSession");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ProgramSession", b =>
+                {
+                    b.HasOne("Web.Domain.Models.ProgramItem", "ProgramItem")
+                        .WithMany("ProgramSessions")
+                        .HasForeignKey("ProgramItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProgramItem");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.Submission", b =>
@@ -341,12 +670,35 @@ namespace Web.DataAccess.Migrations
 
             modelBuilder.Entity("Web.Domain.Models.ConferenceSettings", b =>
                 {
+                    b.Navigation("BookingOptions");
+
+                    b.Navigation("ConferenceEntries");
+
+                    b.Navigation("FoodOptions");
+
                     b.Navigation("ImportantDates");
+
+                    b.Navigation("ProgramDays");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.Participant", b =>
                 {
                     b.Navigation("FileManagers");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ProgramDay", b =>
+                {
+                    b.Navigation("ProgramItems");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ProgramItem", b =>
+                {
+                    b.Navigation("ProgramSessions");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ProgramSession", b =>
+                {
+                    b.Navigation("ProgramPresentations");
                 });
 #pragma warning restore 612, 618
         }

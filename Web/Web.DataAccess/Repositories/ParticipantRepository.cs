@@ -23,19 +23,30 @@ public class ParticipantRepository : IParticipantRepository
     public async Task<Participant?> GetByUserIdAsync(int userId)
     {
         return await _dbContext.Participants
+            .Include(p => p.Conference)
+            .Include(p => p.ConferenceEntry)
             .Include(p => p.FileManagers.OrderByDescending(fm => fm.CreatedAt))
-            .FirstOrDefaultAsync(p => p.UserId == userId);
+            .Where(p => p.UserId == userId && p.Conference != null && p.Conference.IsActive)
+            .OrderByDescending(p => p.ConferenceId)
+            .FirstOrDefaultAsync();
     }
 
     public async Task<Participant?> GetByUserIdConferenceIdAsync(int userId, int conferenceId)
     {
         return await _dbContext.Participants
+            .Include(p => p.ConferenceEntry)
             .FirstOrDefaultAsync(p => p.UserId == userId && p.ConferenceId == conferenceId);
     }
 
     public async Task UpdateAsync(Participant participant)
     {
         _dbContext.Participants.Update(participant);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(Participant participant)
+    {
+        _dbContext.Participants.Remove(participant);
         await _dbContext.SaveChangesAsync();
     }
 
@@ -56,6 +67,7 @@ public class ParticipantRepository : IParticipantRepository
     public async Task<List<Participant>> GetAllByActiveConferenceAsync()
     {
         return await  _dbContext.Participants
+            .Include(p => p.ConferenceEntry)
             .Include(p => p.FileManagers.OrderByDescending(fm => fm.CreatedAt))
             .Where(p => p.Conference != null && p.Conference.IsActive == true)
             .ToListAsync();

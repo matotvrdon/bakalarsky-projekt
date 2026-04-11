@@ -19,10 +19,17 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
     {
-        var response = await _authService.LoginAsync(dto);
-        if (response is null)
-            return Unauthorized();
-        return Ok(response);
+        try
+        {
+            var response = await _authService.LoginAsync(dto);
+            if (response is null)
+                return Unauthorized();
+            return Ok(response);
+        }
+        catch (RegistrationFlowException ex)
+        {
+            return StatusCode((int)ex.StatusCode, ex.Response);
+        }
     }
 
 

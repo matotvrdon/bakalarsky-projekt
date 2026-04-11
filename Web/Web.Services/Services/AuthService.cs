@@ -51,6 +51,11 @@ public class AuthService : IAuthService
         if (result == PasswordVerificationResult.Failed)
             return null;
 
+        if (dto.ParticipantId.HasValue)
+        {
+            await LinkParticipantToExistingUserAsync(user, dto.ParticipantId.Value);
+        }
+
         return new LoginResponseDto
         {
             User = new UserDto
@@ -150,7 +155,7 @@ public class AuthService : IAuthService
             throw new RegistrationFlowException(HttpStatusCode.Conflict, new RegistrationErrorResponseDto
             {
                 Code = "EMAIL_EXISTS",
-                Message = "Email already exists.",
+                Message = "Email already exists. Prihláste sa existujúcim účtom.",
                 Field = "email"
             });
         }
@@ -250,5 +255,45 @@ public class AuthService : IAuthService
         if (string.IsNullOrWhiteSpace(value))
             return null;
         return value.Trim();
+    }
+
+    private async Task LinkParticipantToExistingUserAsync(User user, int participantId)
+    {
+        var participant = await _participantRepository.GetByIdAsync(participantId);
+        if (participant == null)
+        {
+            throw new RegistrationFlowException(HttpStatusCode.NotFound, new RegistrationErrorResponseDto
+            {
+                Code = "PARTICIPANT_NOT_FOUND",
+                Message = $"Participant with id {participantId} was not found."
+            });
+        }
+
+        if (participant.UserId == user.Id)
+        {
+            return;
+        }
+
+        var existingParticipant = await _participantRepository.GetByUserIdConferenceIdAsync(user.Id, participant.ConferenceId);
+        if (existingParticipant != null && existingParticipant.Id != participant.Id)
+        {
+            if (!participant.UserId.HasValue)
+            {
+                await _participantRepository.DeleteAsync(participant);
+            }
+            return;
+        }
+
+        if (participant.UserId.HasValue && participant.UserId != user.Id)
+        {
+            throw new RegistrationFlowException(HttpStatusCode.Conflict, new RegistrationErrorResponseDto
+            {
+                Code = "PARTICIPANT_ALREADY_LINKED",
+                Message = "Participant already has a linked user account."
+            });
+        }
+
+        participant.UserId = user.Id;
+        await _participantRepository.UpdateAsync(participant);
     }
 }
