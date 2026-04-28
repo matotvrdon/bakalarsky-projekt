@@ -1,0 +1,11 @@
+namespace Web.Services.DTOs;
+
+public class RegistrationBasicRequestDto
+{
+    public required string FirstName { get; set; }
+    public required string LastName { get; set; }
+    public string? Phone { get; set; }
+    public string? Affiliation { get; set; }
+    public string? Country { get; set; }
+    public int ConferenceId { get; set; }
+}

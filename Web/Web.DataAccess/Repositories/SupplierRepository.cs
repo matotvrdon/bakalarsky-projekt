@@ -1,24 +1,23 @@
 using Microsoft.EntityFrameworkCore;
+using Web.DataAccess.Abstractions;
 using Web.DataAccess.Data;
-using Web.Domain.Abstractions;
 using Web.Domain.Models;
 
 namespace Web.DataAccess.Repositories;
 
 public class SupplierRepository : ISupplierRepository
 {
-    
-    private readonly ApplicationDbContext _context;
+    private readonly AppDbContext _context;
 
-    public SupplierRepository(ApplicationDbContext context)
+    public SupplierRepository(AppDbContext context)
     {
         _context = context;
     }
 
-    public async Task<Supplier?> GetByIdAsync(int id)
+    public async Task<Supplier?> GetAsync()
     {
-        return await _context.Supplier
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id);
+        return await _context.Suppliers
+            .OrderBy(supplier => supplier.Id)
+            .FirstOrDefaultAsync();
     }
 }

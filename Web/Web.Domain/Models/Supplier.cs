@@ -10,7 +10,7 @@ public class Supplier
     public required string Country { get; set; }
     public required string Ico { get; set; }
     public required string Dic { get; set; }
-    public string? IcDph { get; set; }
+    public string IcDph { get; set; }
     public required string Bank { get; set; }
     public required string Address { get; set; }
     public required string AddressPostalCode { get; set; }

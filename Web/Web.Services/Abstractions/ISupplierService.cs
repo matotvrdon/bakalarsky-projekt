@@ -1,8 +1,8 @@
-using Web.Services.DTOs.Supplier;
+using Web.Services.DTOs;
 
 namespace Web.Services.Abstractions;
 
 public interface ISupplierService
 {
-    Task<SupplierDto?> GetByIdAsync(int id);
+    Task<SupplierDto?> GetAsync();
 }
