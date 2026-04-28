@@ -14,8 +14,8 @@ public class Participant
     public int? ConferenceEntryId { get; set; }
     public ConferenceEntry? ConferenceEntry { get; set; }
     
-    public bool? IsStudent { get; set; }
-    public bool? IsPresenting { get; set; }
+    public bool IsStudent { get; set; } = false;
+    public bool IsPresenting { get; set; }  = false;
     
     public List<FileManager> FileManagers { get; set; } = [];
     public int? UserId { get; set; }

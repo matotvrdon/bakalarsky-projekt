@@ -43,23 +43,37 @@ public class ConferenceService : IConferenceService
 
     public async Task<(byte[] Content, string FileName)?> GenerateProgramPdfAsync(int id)
     {
-        var conference = await _conferenceRepository.GetByIdAsync(id);
-        if (conference?.Settings == null)
+        var conferenceDto = await GetByIdAsync(id);
+
+        if (conferenceDto?.Settings == null)
         {
             return null;
         }
 
-        conference.Settings.Conference = conference;
+        var fileNameBase = CreateSafeFileName(conferenceDto.Name);
 
-        var fileNameBase = string.IsNullOrWhiteSpace(conference.Name)
-            ? "program-konferencie"
-            : conference.Name.Trim().Replace(" ", "-");
-
-        var pdfBytes = _programPdfGenerator.GenerateProgramPdf(
-            conference.Settings,
-            conference.Settings.ProgramDays ?? []);
+        var pdfBytes = _programPdfGenerator.GenerateProgramPdf(conferenceDto);
 
         return (pdfBytes, $"{fileNameBase}-program.pdf");
+    }
+
+    private static string CreateSafeFileName(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return "program-konferencie";
+        }
+
+        var invalidChars = Path.GetInvalidFileNameChars();
+
+        var cleaned = new string(
+            value
+                .Trim()
+                .Select(character => invalidChars.Contains(character) ? '-' : character)
+                .ToArray()
+        );
+
+        return cleaned.Replace(" ", "-");
     }
 
     public async Task<ConferenceDto> CreateAsync(ConferenceCreateDto dto)

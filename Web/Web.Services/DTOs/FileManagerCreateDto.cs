@@ -11,4 +11,7 @@ public class FileManagerCreateDto
     public required string FileName { get; set; }
     public required string OriginalFileName { get; set; }
     public DateTime CreatedAt { get; set; }
+    public DateTime? ReviewedAt { get; set; }
+
+    public int? ReviewedByUserId { get; set; }
 }

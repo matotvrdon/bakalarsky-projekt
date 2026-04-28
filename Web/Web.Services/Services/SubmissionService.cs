@@ -29,55 +29,47 @@ public class SubmissionService : ISubmissionService
 
     public async Task<SubmissionDto> CreateAsync(SubmissionCreateDto dto)
     {
-        var participant = await GetParticipantOrThrowAsync(dto.ParticipantId);
-        await EnsureConferenceExistsAsync(dto.ConferenceId);
-        EnsureParticipantConferenceMatch(participant, dto.ConferenceId);
+        var participant = await _participantRepository.GetByIdAsync(dto.ParticipantId);
 
-        if (await _submissionRepository.ExistsByParticipantIdAsync(dto.ParticipantId))
+        if (participant == null)
         {
-            throw new SubmissionFlowException(HttpStatusCode.Conflict, new SubmissionErrorResponseDto
-            {
-                Code = "SUBMISSION_ALREADY_EXISTS",
-                Message = "Submission for this participant already exists. Use update flow.",
-                Field = "participantId"
-            });
+            throw new Exception("Participant was not found.");
         }
 
         var submission = _mapper.Map<Submission>(dto);
-        submission.Participant = participant;
         submission.CreatedAt = DateTime.UtcNow;
-        submission.UpdatedAt = null;
+        submission.UpdatedAt = DateTime.UtcNow;
+
+        participant.IsPresenting = dto.IsPresenting;
 
         await _submissionRepository.AddAsync(submission);
+        await _participantRepository.UpdateAsync(participant);
+
         return _mapper.Map<SubmissionDto>(submission);
     }
 
     public async Task<SubmissionDto?> UpdateAsync(int id, SubmissionUpdateDto dto)
     {
         var submission = await _submissionRepository.GetByIdAsync(id);
+
         if (submission == null)
-            return null;
-
-        var participant = await GetParticipantOrThrowAsync(dto.ParticipantId);
-        await EnsureConferenceExistsAsync(dto.ConferenceId);
-        EnsureParticipantConferenceMatch(participant, dto.ConferenceId);
-
-        var existingForParticipant = await _submissionRepository.GetByParticipantIdAsync(dto.ParticipantId);
-        if (existingForParticipant != null && existingForParticipant.Id != id)
         {
-            throw new SubmissionFlowException(HttpStatusCode.Conflict, new SubmissionErrorResponseDto
-            {
-                Code = "SUBMISSION_ALREADY_EXISTS",
-                Message = "Submission for this participant already exists.",
-                Field = "participantId"
-            });
+            return null;
         }
 
         _mapper.Map(dto, submission);
-        submission.Participant = participant;
         submission.UpdatedAt = DateTime.UtcNow;
 
+        var participant = await _participantRepository.GetByIdAsync(submission.ParticipantId);
+
+        if (participant != null)
+        {
+            participant.IsPresenting = dto.IsPresenting;
+            await _participantRepository.UpdateAsync(participant);
+        }
+
         await _submissionRepository.UpdateAsync(submission);
+
         return _mapper.Map<SubmissionDto>(submission);
     }
 

@@ -12,8 +12,8 @@ using Web.DataAccess.Data;
 namespace Web.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260410195635_uuuuu")]
-    partial class uuuuu
+    [Migration("20260428021541_Innit")]
+    partial class Innit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -60,6 +60,82 @@ namespace Web.DataAccess.Migrations
                     b.ToTable("BookingOptions");
                 });
 
+            modelBuilder.Entity("Web.Domain.Models.CommitteeMember", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Affiliation")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<int>("CommitteeRoleId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Country")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Position")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommitteeRoleId");
+
+                    b.ToTable("CommitteeMembers");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.CommitteeRole", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConferenceCommitteeId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConferenceCommitteeId");
+
+                    b.ToTable("CommitteeRoles");
+                });
+
             modelBuilder.Entity("Web.Domain.Models.Conference", b =>
                 {
                     b.Property<int>("Id")
@@ -91,6 +167,42 @@ namespace Web.DataAccess.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Conferences");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ConferenceCommittee", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConferenceSettingsId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConferenceSettingsId");
+
+                    b.ToTable("ConferenceCommittees");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.ConferenceEntry", b =>
@@ -248,6 +360,158 @@ namespace Web.DataAccess.Migrations
                     b.ToTable("ImportantDates");
                 });
 
+            modelBuilder.Entity("Web.Domain.Models.Invoice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BillingAddress")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("CompanyName")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<int>("ConferenceId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<int>("CustomerType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Dic")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTime>("DueDateUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("FileManagerId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Ico")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("InvoiceNumber")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime?>("PaidAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SharedCode")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("VatId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConferenceId");
+
+                    b.HasIndex("FileManagerId");
+
+                    b.HasIndex("InvoiceNumber")
+                        .IsUnique();
+
+                    b.HasIndex("SharedCode")
+                        .IsUnique();
+
+                    b.ToTable("Invoices");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.InvoiceItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("InvoiceId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<int?>("ParticipantId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("SourceId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("numeric(10,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.HasIndex("ParticipantId");
+
+                    b.ToTable("InvoiceItems");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.InvoiceParticipant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("InvoiceId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ParticipantId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParticipantId");
+
+                    b.HasIndex("InvoiceId", "ParticipantId")
+                        .IsUnique();
+
+                    b.ToTable("InvoiceParticipants");
+                });
+
             modelBuilder.Entity("Web.Domain.Models.Participant", b =>
                 {
                     b.Property<int>("Id")
@@ -272,10 +536,10 @@ namespace Web.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsPresenting")
+                    b.Property<bool>("IsPresenting")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsStudent")
+                    b.Property<bool>("IsStudent")
                         .HasColumnType("boolean");
 
                     b.Property<string>("LastName")
@@ -482,6 +746,159 @@ namespace Web.DataAccess.Migrations
                     b.ToTable("Submissions");
                 });
 
+            modelBuilder.Entity("Web.Domain.Models.SubmissionSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AbstractMinWords")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ConferenceCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("ConferenceSettingsId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("EasyChairUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<decimal>("ExtraPagePrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime?>("FinalPaperDeadline")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("IeeePdfExpressUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("IeeeTemplateUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LatexExample")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("MaxPages")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConferenceSettingsId")
+                        .IsUnique();
+
+                    b.ToTable("SubmissionSettings");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.Supplier", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("AddressCity")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("AddressPostalCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Bank")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BankAccount")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Dic")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Iban")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("IcDph")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Ico")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PostalCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Swift")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Suppliers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Address = "Letná 40",
+                            AddressCity = "Košice",
+                            AddressPostalCode = "040 01",
+                            Bank = "Všeobecná úverová banka, a.s.",
+                            BankAccount = "1584034953/0200",
+                            City = "Košice",
+                            Country = "Slovanská Republika",
+                            Dic = "2021681970",
+                            Iban = "SK55 0200 0000 0015 8403 4953",
+                            IcDph = "SK2021681970",
+                            Ico = "35541784",
+                            Name = "Pobočka SSAKI pri KPI FEI TU v Košiciach",
+                            Phone = "+421/(0)55/602 4148",
+                            PostalCode = "040 01",
+                            Street = "Letná 9",
+                            Swift = "SUBASKBX"
+                        });
+                });
+
             modelBuilder.Entity("Web.Domain.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -510,12 +927,55 @@ namespace Web.DataAccess.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 9999,
+                            CreatedAt = new DateTime(2026, 4, 28, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "admin@admin",
+                            PasswordHash = "AQAAAAEAACcQAAAAEDwHjYoxtrvuR2EGHqT3BtCqcdNdrZM9ewhYCyC4DlfwJDIL0AnrqRenzXSgcCnVeA==",
+                            Role = 0
+                        });
                 });
 
             modelBuilder.Entity("Web.Domain.Models.BookingOptions", b =>
                 {
                     b.HasOne("Web.Domain.Models.ConferenceSettings", "ConferenceSettings")
                         .WithMany("BookingOptions")
+                        .HasForeignKey("ConferenceSettingsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ConferenceSettings");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.CommitteeMember", b =>
+                {
+                    b.HasOne("Web.Domain.Models.CommitteeRole", "CommitteeRole")
+                        .WithMany("Members")
+                        .HasForeignKey("CommitteeRoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CommitteeRole");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.CommitteeRole", b =>
+                {
+                    b.HasOne("Web.Domain.Models.ConferenceCommittee", "ConferenceCommittee")
+                        .WithMany("Roles")
+                        .HasForeignKey("ConferenceCommitteeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ConferenceCommittee");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ConferenceCommittee", b =>
+                {
+                    b.HasOne("Web.Domain.Models.ConferenceSettings", "ConferenceSettings")
+                        .WithMany("ConferenceCommittees")
                         .HasForeignKey("ConferenceSettingsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -576,6 +1036,61 @@ namespace Web.DataAccess.Migrations
                         .IsRequired();
 
                     b.Navigation("ConferenceSettings");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.Invoice", b =>
+                {
+                    b.HasOne("Web.Domain.Models.Conference", "Conference")
+                        .WithMany()
+                        .HasForeignKey("ConferenceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Web.Domain.Models.FileManager", "FileManager")
+                        .WithMany()
+                        .HasForeignKey("FileManagerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Conference");
+
+                    b.Navigation("FileManager");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.InvoiceItem", b =>
+                {
+                    b.HasOne("Web.Domain.Models.Invoice", "Invoice")
+                        .WithMany("Items")
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Web.Domain.Models.Participant", "Participant")
+                        .WithMany()
+                        .HasForeignKey("ParticipantId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Invoice");
+
+                    b.Navigation("Participant");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.InvoiceParticipant", b =>
+                {
+                    b.HasOne("Web.Domain.Models.Invoice", "Invoice")
+                        .WithMany("Participants")
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Web.Domain.Models.Participant", "Participant")
+                        .WithMany()
+                        .HasForeignKey("ParticipantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Invoice");
+
+                    b.Navigation("Participant");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.Participant", b =>
@@ -666,14 +1181,37 @@ namespace Web.DataAccess.Migrations
                     b.Navigation("Participant");
                 });
 
+            modelBuilder.Entity("Web.Domain.Models.SubmissionSettings", b =>
+                {
+                    b.HasOne("Web.Domain.Models.ConferenceSettings", "ConferenceSettings")
+                        .WithOne("SubmissionSettings")
+                        .HasForeignKey("Web.Domain.Models.SubmissionSettings", "ConferenceSettingsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ConferenceSettings");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.CommitteeRole", b =>
+                {
+                    b.Navigation("Members");
+                });
+
             modelBuilder.Entity("Web.Domain.Models.Conference", b =>
                 {
                     b.Navigation("Settings");
                 });
 
+            modelBuilder.Entity("Web.Domain.Models.ConferenceCommittee", b =>
+                {
+                    b.Navigation("Roles");
+                });
+
             modelBuilder.Entity("Web.Domain.Models.ConferenceSettings", b =>
                 {
                     b.Navigation("BookingOptions");
+
+                    b.Navigation("ConferenceCommittees");
 
                     b.Navigation("ConferenceEntries");
 
@@ -682,6 +1220,15 @@ namespace Web.DataAccess.Migrations
                     b.Navigation("ImportantDates");
 
                     b.Navigation("ProgramDays");
+
+                    b.Navigation("SubmissionSettings");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.Invoice", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("Participants");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.Participant", b =>

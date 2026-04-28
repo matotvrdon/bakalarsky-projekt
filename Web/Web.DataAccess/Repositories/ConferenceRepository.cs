@@ -26,7 +26,7 @@ public class ConferenceRepository : IConferenceRepository
             .Include(conference => conference.Settings)
             .ThenInclude(settings => settings!.BookingOptions)
             .Include(conference => conference.Settings)
-            .ThenInclude(settings => settings!.ProgramDays)
+            .ThenInclude(settings => settings!.ProgramDays)!
             .ThenInclude(day => day.ProgramItems)
             .ThenInclude(item => item.ProgramSessions)
             .ThenInclude(session => session.ProgramPresentations)

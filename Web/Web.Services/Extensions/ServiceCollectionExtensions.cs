@@ -28,6 +28,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFileManagerService, FileManagerService>();
         services.AddScoped<ISubmissionService, SubmissionService>();
         services.AddScoped<IProgramPdfGenerator, ProgramPdfGenerator>();
+        services.AddScoped<ICommitteeService, CommitteeService>();
+        services.AddScoped<ISubmissionSettingsService, SubmissionSettingsService>();
+        services.AddScoped<IInvoiceService, InvoiceService>();
+        services.AddScoped<IInvoicePdfGenerator, InvoicePdfGenerator>();
+        services.AddScoped<ISupplierService, SupplierService>();
+        services.AddScoped<IInvoicePdfStorageService, InvoicePdfStorageService>();
         
         services.AddTransient<IEmailService, EmailService>();
         

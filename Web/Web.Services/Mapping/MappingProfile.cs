@@ -1,6 +1,8 @@
 using AutoMapper;
+using Web.Domain.Enums;
 using Web.Domain.Models;
 using Web.Services.DTOs;
+using Web.Services.DTOs.Committees;
 
 namespace Web.Services.Mapping;
 
@@ -77,5 +79,81 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
         CreateMap<Submission, SubmissionDto>();
+        
+        CreateMap<ConferenceCommittee, CommitteeDto>();
+        CreateMap<CommitteeRole, CommitteeRoleDto>();
+        CreateMap<CommitteeMember, CommitteeMemberDto>();
+
+        CreateMap<CommitteeCreateDto, ConferenceCommittee>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceSettingsId, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceSettings, opt => opt.Ignore())
+            .ForMember(dest => dest.Roles, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+
+        CreateMap<CommitteeUpdateDto, ConferenceCommittee>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceSettingsId, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceSettings, opt => opt.Ignore())
+            .ForMember(dest => dest.Roles, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+
+        CreateMap<CommitteeRoleCreateDto, CommitteeRole>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceCommitteeId, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceCommittee, opt => opt.Ignore())
+            .ForMember(dest => dest.Members, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+
+        CreateMap<CommitteeRoleUpdateDto, CommitteeRole>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceCommitteeId, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceCommittee, opt => opt.Ignore())
+            .ForMember(dest => dest.Members, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+
+        CreateMap<CommitteeMemberCreateDto, CommitteeMember>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CommitteeRoleId, opt => opt.Ignore())
+            .ForMember(dest => dest.CommitteeRole, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+
+        CreateMap<CommitteeMemberUpdateDto, CommitteeMember>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CommitteeRoleId, opt => opt.Ignore())
+            .ForMember(dest => dest.CommitteeRole, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+
+        CreateMap<SubmissionSettings, SubmissionSettingsDto>();
+
+        CreateMap<SubmissionSettingsCreateDto, SubmissionSettings>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceSettingsId, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceSettings, opt => opt.Ignore());
+
+        CreateMap<SubmissionSettingsUpdateDto, SubmissionSettings>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceSettingsId, opt => opt.Ignore())
+            .ForMember(dest => dest.ConferenceSettings, opt => opt.Ignore());
+        
+        CreateMap<Invoice, InvoiceDto>()
+            .ForMember(
+                dest => dest.IsShared,
+                opt => opt.MapFrom(src => src.Type == InvoiceType.Shared)
+            );
+        CreateMap<InvoiceItem, InvoiceItemDto>();
+        CreateMap<InvoiceParticipant, InvoiceParticipantDto>()
+            .ForMember(
+                dest => dest.FullName,
+                opt => opt.MapFrom(src => $"{src.Participant.FirstName} {src.Participant.LastName}")
+            );
+        
+        CreateMap<Supplier, SupplierDto>();
     }
 }
