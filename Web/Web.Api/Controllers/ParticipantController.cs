@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Web.DataAccess.Data;
@@ -27,7 +28,7 @@ public class ParticipantController : ControllerBase
             return NotFound();
         return Ok(participant);
     }
-
+    
     [HttpGet("by-user/{userId:int}")]
     public async Task<IActionResult> GetByUserId([FromRoute] int userId)
     {

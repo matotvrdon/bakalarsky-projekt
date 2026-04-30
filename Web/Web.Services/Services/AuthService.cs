@@ -43,28 +43,36 @@ public class AuthService : IAuthService
 
     public async Task<LoginResponseDto?> LoginAsync(LoginRequestDto dto)
     {
-        var email = dto.Email.Trim().ToLower();
-        var user = await _authRepository.GetByEmailAsync(email);
+        var user = await ValidateUserCredentialsAsync(dto);
+
         if (user is null)
+        {
             return null;
-        var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
-        if (result == PasswordVerificationResult.Failed)
-            return null;
+        }
 
         if (dto.ParticipantId.HasValue)
         {
             await LinkParticipantToExistingUserAsync(user, dto.ParticipantId.Value);
         }
 
-        return new LoginResponseDto
+        return CreateLoginResponse(user);
+    }
+
+    public async Task<LoginResponseDto?> AdminLoginAsync(LoginRequestDto dto)
+    {
+        var user = await ValidateUserCredentialsAsync(dto);
+
+        if (user is null)
         {
-            User = new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                Role = user.Role
-            }
-        };
+            return null;
+        }
+
+        if (user.Role != UserRole.Admin)
+        {
+            return null;
+        }
+
+        return CreateLoginResponse(user);
     }
 
     public async Task<RegistrationSimpleResponseDto> RegisterAsync(RegistrationSimpleRequestDto dto)
@@ -72,23 +80,27 @@ public class AuthService : IAuthService
         var email = NormalizeEmail(dto.Email);
         var (user, password) = await GenerateUser(email);
         var participant = _mapper.Map<Participant>(dto);
+
         _mapper.Map(user, participant);
+
         if (await _participantRepository.ExistsAsync(email, participant.ConferenceId))
         {
             var response = new RegistrationSimpleResponseDto
             {
                 Message = $"Email {email} už existuje na konferenciu {participant.ConferenceId}",
                 Email = email,
-                
             };
 
             throw new RegistrationConflictException(response);
         }
+
         await _participantRepository.AddAsync(participant);
+
         if (!string.IsNullOrWhiteSpace(password))
         {
             await _emailService.SendEmailCredentialsAsync(user.Email, password);
         }
+
         return new RegistrationSimpleResponseDto
         {
             Message = string.IsNullOrWhiteSpace(password)
@@ -97,10 +109,11 @@ public class AuthService : IAuthService
             Email = user.Email,
         };
     }
-    
+
     public async Task<RegistrationBasicResponseDto> RegisterBasicAsync(RegistrationBasicRequestDto dto)
     {
         var conferenceExists = await _conferenceRepository.ExistsAsync(dto.ConferenceId);
+
         if (!conferenceExists)
         {
             throw new RegistrationFlowException(HttpStatusCode.NotFound, new RegistrationErrorResponseDto
@@ -131,6 +144,7 @@ public class AuthService : IAuthService
     public async Task<RegistrationAccountResponseDto> RegisterAccountAsync(RegistrationAccountRequestDto dto)
     {
         var participant = await _participantRepository.GetByIdAsync(dto.ParticipantId);
+
         if (participant == null)
         {
             throw new RegistrationFlowException(HttpStatusCode.NotFound, new RegistrationErrorResponseDto
@@ -150,6 +164,7 @@ public class AuthService : IAuthService
         }
 
         var email = NormalizeEmail(dto.Email);
+
         if (await _authRepository.ExistsAsync(email))
         {
             throw new RegistrationFlowException(HttpStatusCode.Conflict, new RegistrationErrorResponseDto
@@ -167,9 +182,11 @@ public class AuthService : IAuthService
             Role = UserRole.Participant,
             CreatedAt = DateTime.UtcNow
         };
+
         user.PasswordHash = _passwordHasher.HashPassword(user, dto.Password);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
         try
         {
             await _authRepository.AddAsync(user);
@@ -180,6 +197,7 @@ public class AuthService : IAuthService
         catch (DbUpdateException)
         {
             await transaction.RollbackAsync();
+
             throw new RegistrationFlowException(HttpStatusCode.Conflict, new RegistrationErrorResponseDto
             {
                 Code = "EMAIL_EXISTS",
@@ -205,15 +223,52 @@ public class AuthService : IAuthService
             Message = "Account created."
         };
     }
-    
-    
+
+    private async Task<User?> ValidateUserCredentialsAsync(LoginRequestDto dto)
+    {
+        var email = NormalizeEmail(dto.Email);
+        var user = await _authRepository.GetByEmailAsync(email);
+
+        if (user is null)
+        {
+            return null;
+        }
+
+        var result = _passwordHasher.VerifyHashedPassword(
+            user,
+            user.PasswordHash,
+            dto.Password
+        );
+
+        return result == PasswordVerificationResult.Failed
+            ? null
+            : user;
+    }
+
+    private static LoginResponseDto CreateLoginResponse(User user)
+    {
+        return new LoginResponseDto
+        {
+            User = new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Role = user.Role
+            }
+        };
+    }
+
     private async Task<(User user, string? password)> GenerateUser(string email)
     {
         if (await _authRepository.ExistsAsync(email))
         {
             var existingUser = await _authRepository.GetByEmailAsync(email);
+
             if (existingUser is null)
+            {
                 throw new InvalidOperationException("User exists but could not be loaded.");
+            }
+
             return (existingUser, null);
         }
 
@@ -224,19 +279,22 @@ public class AuthService : IAuthService
             Role = UserRole.Participant,
             CreatedAt = DateTime.UtcNow
         };
+
         var password = GeneratePassword();
         user.PasswordHash = _passwordHasher.HashPassword(user, password);
-        
+
         await _authRepository.AddAsync(user);
+
         return (user, password);
     }
 
-    private string GeneratePassword()
+    private static string GeneratePassword()
     {
         const int length = 8;
         const string symbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
         var password = new char[length];
+
         for (var i = 0; i < length; i++)
         {
             password[i] = symbols[RandomNumberGenerator.GetInt32(symbols.Length)];
@@ -252,14 +310,15 @@ public class AuthService : IAuthService
 
     private static string? NormalizeOptional(string? value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-            return null;
-        return value.Trim();
+        return string.IsNullOrWhiteSpace(value)
+            ? null
+            : value.Trim();
     }
 
     private async Task LinkParticipantToExistingUserAsync(User user, int participantId)
     {
         var participant = await _participantRepository.GetByIdAsync(participantId);
+
         if (participant == null)
         {
             throw new RegistrationFlowException(HttpStatusCode.NotFound, new RegistrationErrorResponseDto
@@ -274,13 +333,18 @@ public class AuthService : IAuthService
             return;
         }
 
-        var existingParticipant = await _participantRepository.GetByUserIdConferenceIdAsync(user.Id, participant.ConferenceId);
+        var existingParticipant = await _participantRepository.GetByUserIdConferenceIdAsync(
+            user.Id,
+            participant.ConferenceId
+        );
+
         if (existingParticipant != null && existingParticipant.Id != participant.Id)
         {
             if (!participant.UserId.HasValue)
             {
                 await _participantRepository.DeleteAsync(participant);
             }
+
             return;
         }
 

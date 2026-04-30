@@ -13,7 +13,7 @@ public class AuthRepository : IAuthRepository
     {
         _dbContext = dbContext;
     }
-
+    
     public async Task<User?> GetByEmailAsync(string email)
     {
         return await _dbContext.Users

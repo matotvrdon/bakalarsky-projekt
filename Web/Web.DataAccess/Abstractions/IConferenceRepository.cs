@@ -5,6 +5,7 @@ namespace Web.DataAccess.Abstractions;
 public interface IConferenceRepository
 {
     Task<Conference?> GetByIdAsync(int id);
+    Task<Conference?> GetPublicByIdAsync(int id);
     Task<List<Conference>> GetAllAsync();
     Task<List<Conference>> GetActiveAsync();
     Task<Conference> AddAsync(Conference conference);

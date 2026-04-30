@@ -1,3 +1,5 @@
+using Web.Domain.Enums;
+
 namespace Web.Services.DTOs;
 
 public class ConferenceUpdateDto
@@ -7,5 +9,6 @@ public class ConferenceUpdateDto
     public DateOnly StartDate { get; set; }
     public DateOnly EndDate { get; set; }
     public string? Location { get; set; }
-    public bool IsActive { get; set; }
+    public bool IsPublished { get; set; }
+    public ConferenceStatus Status { get; set; }
 }

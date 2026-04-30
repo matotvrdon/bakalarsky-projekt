@@ -25,20 +25,42 @@ public class ConferenceService : IConferenceService
     public async Task<List<ConferenceDto>> GetAllAsync()
     {
         var conferences = await _conferenceRepository.GetAllAsync();
+
         return _mapper.Map<List<ConferenceDto>>(conferences);
     }
 
     public async Task<List<ConferenceDto>> GetActiveAsync()
     {
         var conferences = await _conferenceRepository.GetActiveAsync();
+
         return _mapper.Map<List<ConferenceDto>>(conferences);
     }
 
     public async Task<ConferenceDto?> GetByIdAsync(int id)
     {
         var conference = await _conferenceRepository.GetByIdAsync(id);
-        
-        return conference == null ? null : _mapper.Map<ConferenceDto>(conference);
+
+        return conference == null
+            ? null
+            : _mapper.Map<ConferenceDto>(conference);
+    }
+
+    public async Task<ConferenceDto?> GetPublicByIdAsync(int id)
+    {
+        var conference = await _conferenceRepository.GetPublicByIdAsync(id);
+
+        return conference == null
+            ? null
+            : _mapper.Map<ConferenceDto>(conference);
+    }
+
+    public async Task<ConferenceDto?> GetPreviewByIdAsync(int id)
+    {
+        var conference = await _conferenceRepository.GetByIdAsync(id);
+
+        return conference == null
+            ? null
+            : _mapper.Map<ConferenceDto>(conference);
     }
 
     public async Task<(byte[] Content, string FileName)?> GenerateProgramPdfAsync(int id)
@@ -55,6 +77,45 @@ public class ConferenceService : IConferenceService
         var pdfBytes = _programPdfGenerator.GenerateProgramPdf(conferenceDto);
 
         return (pdfBytes, $"{fileNameBase}-program.pdf");
+    }
+
+    public async Task<ConferenceDto> CreateAsync(ConferenceCreateDto dto)
+    {
+        var conference = _mapper.Map<Conference>(dto);
+
+        await _conferenceRepository.AddAsync(conference);
+
+        return _mapper.Map<ConferenceDto>(conference);
+    }
+
+    public async Task<ConferenceDto?> UpdateAsync(int id, ConferenceUpdateDto dto)
+    {
+        var conference = await _conferenceRepository.GetByIdAsync(id);
+
+        if (conference == null)
+        {
+            return null;
+        }
+
+        _mapper.Map(dto, conference);
+
+        await _conferenceRepository.UpdateAsync(conference);
+
+        return _mapper.Map<ConferenceDto>(conference);
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var conference = await _conferenceRepository.GetByIdAsync(id);
+
+        if (conference == null)
+        {
+            return false;
+        }
+
+        await _conferenceRepository.DeleteAsync(conference);
+
+        return true;
     }
 
     private static string CreateSafeFileName(string? value)
@@ -75,32 +136,4 @@ public class ConferenceService : IConferenceService
 
         return cleaned.Replace(" ", "-");
     }
-
-    public async Task<ConferenceDto> CreateAsync(ConferenceCreateDto dto)
-    {
-        var conference = _mapper.Map<Conference>(dto);
-        conference.IsActive = true;
-        await _conferenceRepository.AddAsync(conference);
-        return _mapper.Map<ConferenceDto>(conference);
-    }
-
-    public async Task<ConferenceDto?> UpdateAsync(int id, ConferenceUpdateDto dto)
-    {
-        var conference = await _conferenceRepository.GetByIdAsync(id);
-        if (conference == null)
-            return null;
-        _mapper.Map(dto, conference);
-        await _conferenceRepository.UpdateAsync(conference);
-        return _mapper.Map<ConferenceDto>(conference);
-    }
-
-    public async Task<bool> DeleteAsync(int id)
-    {
-        var conference = await _conferenceRepository.GetByIdAsync(id);
-        if (conference == null)
-            return false;
-        await _conferenceRepository.DeleteAsync(conference);
-        return true;
-    }
-
 }
