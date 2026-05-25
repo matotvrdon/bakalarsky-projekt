@@ -1,0 +1,69 @@
+services:
+  db:
+    image: postgres:16
+    container_name: conference-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - conference_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: ghcr.io/${BACKEND_IMAGE_REPO}:${IMAGE_TAG}
+    container_name: conference-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=db;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Port=5432
+      Database__AutoMigrate: ${DATABASE_AUTO_MIGRATE:-true}
+      HttpsRedirection__Enabled: "false"
+      FileStorage__RootPath: /app/storage
+      Email__Host: ${EMAIL_HOST}
+      Email__Port: ${EMAIL_PORT:-587}
+      Email__UserName: ${EMAIL_USERNAME}
+      Email__Password: ${EMAIL_PASSWORD}
+      Email__FromAddress: ${EMAIL_FROM_ADDRESS}
+      Email__FromName: ${EMAIL_FROM_NAME}
+      Email__LoginUrl: ${EMAIL_LOGIN_URL}
+      Email__SecureSocketOption: ${EMAIL_SECURE_SOCKET_OPTION:-StartTls}
+    volumes:
+      - conference_storage:/app/storage
+
+  frontend:
+    image: ghcr.io/${FRONTEND_IMAGE_REPO}:${IMAGE_TAG}
+    container_name: conference-frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: conference-caddy
+    restart: unless-stopped
+    depends_on:
+      - frontend
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - conference_caddy_data:/data
+      - conference_caddy_config:/config
+
+volumes:
+  conference_pgdata:
+  conference_storage:
+  conference_caddy_data:
+  conference_caddy_config:
