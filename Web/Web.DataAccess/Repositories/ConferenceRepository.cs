@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Web.DataAccess.Abstractions;
 using Web.DataAccess.Data;
+using Web.Domain.Enums;
 using Web.Domain.Models;
 
 namespace Web.DataAccess.Repositories;
@@ -16,69 +17,63 @@ public class ConferenceRepository : IConferenceRepository
 
     public async Task<Conference?> GetByIdAsync(int id)
     {
-        return await _dbContext.Conferences
-            .Include(conference => conference.Settings)
-            .ThenInclude(settings => settings!.ImportantDates)
-            .Include(conference => conference.Settings)
-            .ThenInclude(settings => settings!.ConferenceEntries)
-            .Include(conference => conference.Settings)
-            .ThenInclude(settings => settings!.FoodOptions)
-            .Include(conference => conference.Settings)
-            .ThenInclude(settings => settings!.BookingOptions)
-            .Include(conference => conference.Settings)
-            .ThenInclude(settings => settings!.ProgramDays)!
-            .ThenInclude(day => day.ProgramItems)
-            .ThenInclude(item => item.ProgramSessions)
-            .ThenInclude(session => session.ProgramPresentations)
-            .AsNoTracking()
+        return await CreateConferenceQuery()
             .FirstOrDefaultAsync(conference => conference.Id == id);
+    }
+
+    public async Task<Conference?> GetPublicByIdAsync(int id)
+    {
+        return await CreateConferenceQuery()
+            .FirstOrDefaultAsync(conference =>
+                conference.Id == id &&
+                conference.IsPublished &&
+                conference.Status == ConferenceStatus.Active
+            );
     }
 
     public async Task<List<Conference>> GetAllAsync()
     {
-        return await _dbContext.Conferences
-            .Include(conference => conference.Settings)
-            .ThenInclude(settings => settings!.ImportantDates)
-            .Include(conference => conference.Settings)
-            .ThenInclude(settings => settings!.ConferenceEntries)
-            .Include(conference => conference.Settings)
-            .ThenInclude(settings => settings!.FoodOptions)
-            .Include(conference => conference.Settings)
-            .ThenInclude(settings => settings!.BookingOptions)
-            .Include(conference => conference.Settings)
-            .ThenInclude(settings => settings!.ProgramDays)
-            .ThenInclude(day => day.ProgramItems)
-            .ThenInclude(item => item.ProgramSessions)
-            .ThenInclude(session => session.ProgramPresentations)
-            .AsNoTracking()
+        return await CreateConferenceQuery()
             .ToListAsync();
     }
 
     public async Task<List<Conference>> GetActiveAsync()
     {
-        return await  _dbContext.Conferences
-            .Include(conference => conference.Settings)
-            .ThenInclude(settings => settings!.ImportantDates)
-            .Include(conference => conference.Settings)
-            .ThenInclude(settings => settings!.ConferenceEntries)
-            .Include(conference => conference.Settings)
-            .ThenInclude(settings => settings!.FoodOptions)
-            .Include(conference => conference.Settings)
-            .ThenInclude(settings => settings!.BookingOptions)
-            .Include(conference => conference.Settings)
-            .ThenInclude(settings => settings!.ProgramDays)
-            .ThenInclude(day => day.ProgramItems)
-            .ThenInclude(item => item.ProgramSessions)
-            .ThenInclude(session => session.ProgramPresentations)
-            .AsNoTracking()
-            .Where(conf => conf.IsActive)
+        return await CreateConferenceQuery()
+            .Where(conference =>
+                conference.IsPublished &&
+                conference.Status == ConferenceStatus.Active
+            )
             .ToListAsync();
+    }
+
+    public async Task<Dictionary<int, int>> GetParticipantCountsAsync(List<int> conferenceIds)
+    {
+        if (conferenceIds.Count == 0)
+        {
+            return new Dictionary<int, int>();
+        }
+
+        return await _dbContext.Participants
+            .AsNoTracking()
+            .Where(participant => conferenceIds.Contains(participant.ConferenceId))
+            .GroupBy(participant => participant.ConferenceId)
+            .Select(group => new
+            {
+                ConferenceId = group.Key,
+                Count = group.Count()
+            })
+            .ToDictionaryAsync(
+                item => item.ConferenceId,
+                item => item.Count
+            );
     }
 
     public async Task<Conference> AddAsync(Conference conference)
     {
         await _dbContext.Conferences.AddAsync(conference);
         await _dbContext.SaveChangesAsync();
+
         return conference;
     }
 
@@ -102,8 +97,11 @@ public class ConferenceRepository : IConferenceRepository
             .Include(item => item.Settings)
             .ThenInclude(settings => settings!.ProgramDays)
             .FirstOrDefaultAsync(item => item.Id == conference.Id);
+
         if (conferenceToDelete == null)
+        {
             return;
+        }
 
         if (conferenceToDelete.Settings?.ImportantDates is { Count: > 0 })
         {
@@ -116,13 +114,35 @@ public class ConferenceRepository : IConferenceRepository
         }
 
         _dbContext.Conferences.Remove(conferenceToDelete);
+
         await _dbContext.SaveChangesAsync();
     }
 
     public async Task<bool> ExistsAsync(int id)
     {
-        return  await _dbContext.Conferences
+        return await _dbContext.Conferences
             .AsNoTracking()
             .AnyAsync(conference => conference.Id == id);
+    }
+
+    private IQueryable<Conference> CreateConferenceQuery()
+    {
+        return _dbContext.Conferences
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.ImportantDates)
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.ConferenceEntries)
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.FoodOptions)
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.BookingOptions)
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.ProgramDays)!
+            .ThenInclude(day => day.ProgramItems)
+            .ThenInclude(item => item.ProgramSessions)
+            .ThenInclude(session => session.ProgramPresentations)
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.ParticipantStatuses)
+            .AsNoTracking();
     }
 }

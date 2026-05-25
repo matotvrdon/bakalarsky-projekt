@@ -148,7 +148,7 @@ namespace Web.DataAccess.Migrations
                     b.Property<DateOnly>("EndDate")
                         .HasColumnType("date");
 
-                    b.Property<bool>("IsActive")
+                    b.Property<bool>("IsPublished")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Location")
@@ -160,6 +160,9 @@ namespace Web.DataAccess.Migrations
 
                     b.Property<DateOnly>("StartDate")
                         .HasColumnType("date");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -560,6 +563,70 @@ namespace Web.DataAccess.Migrations
                         .HasFilter("\"UserId\" IS NOT NULL");
 
                     b.ToTable("Participants");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ParticipantStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConferenceSettingsId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("RequiresApproval")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConferenceSettingsId");
+
+                    b.ToTable("ParticipantStatuses");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ParticipantStatusAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ApprovalState")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("FileManagerId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ParticipantId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ParticipantStatusId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FileManagerId");
+
+                    b.HasIndex("ParticipantStatusId");
+
+                    b.HasIndex("ParticipantId", "ParticipantStatusId")
+                        .IsUnique();
+
+                    b.ToTable("ParticipantStatusAssignments");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.ProgramDay", b =>
@@ -1115,6 +1182,43 @@ namespace Web.DataAccess.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Web.Domain.Models.ParticipantStatus", b =>
+                {
+                    b.HasOne("Web.Domain.Models.ConferenceSettings", "ConferenceSettings")
+                        .WithMany("ParticipantStatuses")
+                        .HasForeignKey("ConferenceSettingsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ConferenceSettings");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ParticipantStatusAssignment", b =>
+                {
+                    b.HasOne("Web.Domain.Models.FileManager", "FileManager")
+                        .WithMany("StatusAssignments")
+                        .HasForeignKey("FileManagerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Web.Domain.Models.Participant", "Participant")
+                        .WithMany("StatusAssignments")
+                        .HasForeignKey("ParticipantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Web.Domain.Models.ParticipantStatus", "ParticipantStatus")
+                        .WithMany("Assignments")
+                        .HasForeignKey("ParticipantStatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("FileManager");
+
+                    b.Navigation("Participant");
+
+                    b.Navigation("ParticipantStatus");
+                });
+
             modelBuilder.Entity("Web.Domain.Models.ProgramDay", b =>
                 {
                     b.HasOne("Web.Domain.Models.ConferenceSettings", "ConferenceSettings")
@@ -1216,9 +1320,16 @@ namespace Web.DataAccess.Migrations
 
                     b.Navigation("ImportantDates");
 
+                    b.Navigation("ParticipantStatuses");
+
                     b.Navigation("ProgramDays");
 
                     b.Navigation("SubmissionSettings");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.FileManager", b =>
+                {
+                    b.Navigation("StatusAssignments");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.Invoice", b =>
@@ -1231,6 +1342,13 @@ namespace Web.DataAccess.Migrations
             modelBuilder.Entity("Web.Domain.Models.Participant", b =>
                 {
                     b.Navigation("FileManagers");
+
+                    b.Navigation("StatusAssignments");
+                });
+
+            modelBuilder.Entity("Web.Domain.Models.ParticipantStatus", b =>
+                {
+                    b.Navigation("Assignments");
                 });
 
             modelBuilder.Entity("Web.Domain.Models.ProgramDay", b =>

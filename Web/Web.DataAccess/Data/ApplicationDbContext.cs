@@ -32,6 +32,8 @@ public class AppDbContext : DbContext
     public DbSet<InvoiceItem> InvoiceItems { get; set; }
     public DbSet<InvoiceParticipant> InvoiceParticipants { get; set; }
     public DbSet<Supplier> Suppliers { get; set; }
+    public DbSet<ParticipantStatus> ParticipantStatuses { get; set; }
+    public DbSet<ParticipantStatusAssignment> ParticipantStatusAssignments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -402,6 +404,58 @@ public class AppDbContext : DbContext
                     Phone = "+421/(0)55/602 4148"
                 }
             );
+        });
+        
+        modelBuilder.Entity<ParticipantStatus>(entity =>
+        {
+            entity.HasKey(status => status.Id);
+
+            entity.Property(status => status.Name)
+                .IsRequired()
+                .HasMaxLength(120);
+
+            entity.Property(status => status.RequiresApproval)
+                .IsRequired();
+
+            entity.Property(status => status.IsActive)
+                .IsRequired();
+
+            entity.Property(status => status.Order)
+                .IsRequired();
+
+            entity.HasOne(status => status.ConferenceSettings)
+                .WithMany(settings => settings.ParticipantStatuses)
+                .HasForeignKey(status => status.ConferenceSettingsId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        modelBuilder.Entity<ParticipantStatusAssignment>(entity =>
+        {
+            entity.HasKey(assignment => assignment.Id);
+
+            entity.Property(assignment => assignment.ApprovalState)
+                .IsRequired();
+
+            entity.HasOne(assignment => assignment.Participant)
+                .WithMany(participant => participant.StatusAssignments)
+                .HasForeignKey(assignment => assignment.ParticipantId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(assignment => assignment.ParticipantStatus)
+                .WithMany(status => status.Assignments)
+                .HasForeignKey(assignment => assignment.ParticipantStatusId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(assignment => assignment.FileManager)
+                .WithMany(fileManager => fileManager.StatusAssignments)
+                .HasForeignKey(assignment => assignment.FileManagerId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(assignment => new
+            {
+                assignment.ParticipantId,
+                assignment.ParticipantStatusId
+            }).IsUnique();
         });
     }
 }

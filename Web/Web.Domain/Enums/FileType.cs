@@ -2,7 +2,7 @@ namespace Web.Domain.Enums;
 
 public enum FileType
 {
-    StudentVerification,
-    Submission,
-    Invoice,
+    Invoice = 0,
+    Submission = 1,
+    StatusConfirmation = 2
 }

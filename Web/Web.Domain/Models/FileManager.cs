@@ -15,4 +15,6 @@ public class FileManager
     public DateTime CreatedAt { get; set; }
     public DateTime? ReviewedAt { get; set; }
     public int? ReviewedByUserId { get; set; }
+    
+    public List<ParticipantStatusAssignment> StatusAssignments { get; set; } = [];
 }

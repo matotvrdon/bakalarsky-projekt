@@ -7,8 +7,20 @@ public class ConferenceUpdateDtoValidator : AbstractValidator<ConferenceUpdateDt
 {
     public ConferenceUpdateDtoValidator()
     {
-        RuleFor(x => x.Name).NotEmpty().WithMessage("Meno je povinné.");
-        RuleFor(x => x.Description).NotEmpty().WithMessage("Popis je povinný.");
-        RuleFor(x => x.EndDate).GreaterThanOrEqualTo(x => x.StartDate).WithMessage("Dátum konca musí býť neskôr ako dátum začiatku.");
+        RuleFor(conference => conference.Name)
+            .NotEmpty()
+            .WithMessage("Meno je povinné.");
+
+        RuleFor(conference => conference.Description)
+            .NotEmpty()
+            .WithMessage("Popis je povinný.");
+
+        RuleFor(conference => conference.EndDate)
+            .GreaterThanOrEqualTo(conference => conference.StartDate)
+            .WithMessage("Dátum konca musí byť neskôr ako dátum začiatku.");
+
+        RuleFor(conference => conference.Status)
+            .IsInEnum()
+            .WithMessage("Neplatný stav konferencie.");
     }
 }
