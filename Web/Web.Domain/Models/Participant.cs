@@ -18,6 +18,8 @@ public class Participant
     public bool IsPresenting { get; set; }  = false;
     
     public List<FileManager> FileManagers { get; set; } = [];
+    public List<ParticipantStatusAssignment> StatusAssignments { get; set; } = [];
+    
     public int? UserId { get; set; }
     public User? User { get; set; }
     public int ConferenceId { get; set; }

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Web.DataAccess.Abstractions;
 using Web.DataAccess.Data;
+using Web.Domain.Enums;
 using Web.Domain.Models;
 
 namespace Web.DataAccess.Repositories;
@@ -18,26 +19,27 @@ public class SubmissionSettingsRepository : ISubmissionSettingsRepository
     {
         return await _context.SubmissionSettings
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.ConferenceSettingsId == conferenceSettingsId);
+            .FirstOrDefaultAsync(settings => settings.ConferenceSettingsId == conferenceSettingsId);
     }
 
     public async Task<SubmissionSettings?> GetByConferenceIdAsync(int conferenceId)
     {
         return await _context.SubmissionSettings
             .AsNoTracking()
-            .Include(x => x.ConferenceSettings)
-            .FirstOrDefaultAsync(x => x.ConferenceSettings.ConferenceId == conferenceId);
+            .Include(settings => settings.ConferenceSettings)
+            .FirstOrDefaultAsync(settings => settings.ConferenceSettings.ConferenceId == conferenceId);
     }
 
     public async Task<SubmissionSettings?> GetByActiveConferenceAsync()
     {
         return await _context.SubmissionSettings
             .AsNoTracking()
-            .Include(x => x.ConferenceSettings)
-            .ThenInclude(x => x.Conference)
-            .FirstOrDefaultAsync(x =>
-                x.ConferenceSettings.Conference.IsActive &&
-                x.IsEnabled
+            .Include(settings => settings.ConferenceSettings)
+            .ThenInclude(settings => settings.Conference)
+            .FirstOrDefaultAsync(settings =>
+                settings.ConferenceSettings.Conference.IsPublished &&
+                settings.ConferenceSettings.Conference.Status == ConferenceStatus.Active &&
+                settings.IsEnabled
             );
     }
 
@@ -45,6 +47,7 @@ public class SubmissionSettingsRepository : ISubmissionSettingsRepository
     {
         _context.SubmissionSettings.Add(submissionSettings);
         await _context.SaveChangesAsync();
+
         return submissionSettings;
     }
 

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Web.DataAccess.Abstractions;
 using Web.DataAccess.Data;
+using Web.Domain.Enums;
 using Web.Domain.Models;
 
 namespace Web.DataAccess.Repositories;
@@ -20,9 +21,9 @@ public class CommitteeRepository : ICommitteeRepository
             .AsNoTracking()
             .Where(committee => committee.ConferenceSettings.ConferenceId == conferenceId)
             .Include(committee => committee.ConferenceSettings)
-                .ThenInclude(settings => settings.Conference)
+            .ThenInclude(settings => settings.Conference)
             .Include(committee => committee.Roles)
-                .ThenInclude(role => role.Members)
+            .ThenInclude(role => role.Members)
             .OrderBy(committee => committee.Order)
             .ToListAsync();
     }
@@ -31,11 +32,14 @@ public class CommitteeRepository : ICommitteeRepository
     {
         return await _context.ConferenceCommittees
             .AsNoTracking()
-            .Where(committee => committee.ConferenceSettings.Conference.IsActive)
+            .Where(committee =>
+                committee.ConferenceSettings.Conference.IsPublished &&
+                committee.ConferenceSettings.Conference.Status == ConferenceStatus.Active
+            )
             .Include(committee => committee.ConferenceSettings)
-                .ThenInclude(settings => settings.Conference)
+            .ThenInclude(settings => settings.Conference)
             .Include(committee => committee.Roles)
-                .ThenInclude(role => role.Members)
+            .ThenInclude(role => role.Members)
             .OrderBy(committee => committee.Order)
             .ToListAsync();
     }
@@ -50,9 +54,9 @@ public class CommitteeRepository : ICommitteeRepository
     {
         return await _context.ConferenceCommittees
             .Include(committee => committee.ConferenceSettings)
-                .ThenInclude(settings => settings.Conference)
+            .ThenInclude(settings => settings.Conference)
             .Include(committee => committee.Roles)
-                .ThenInclude(role => role.Members)
+            .ThenInclude(role => role.Members)
             .FirstOrDefaultAsync(committee => committee.Id == committeeId);
     }
 
@@ -60,8 +64,8 @@ public class CommitteeRepository : ICommitteeRepository
     {
         return await _context.CommitteeRoles
             .Include(role => role.ConferenceCommittee)
-                .ThenInclude(committee => committee.ConferenceSettings)
-                    .ThenInclude(settings => settings.Conference)
+            .ThenInclude(committee => committee.ConferenceSettings)
+            .ThenInclude(settings => settings.Conference)
             .Include(role => role.Members)
             .FirstOrDefaultAsync(role => role.Id == roleId);
     }
@@ -70,9 +74,9 @@ public class CommitteeRepository : ICommitteeRepository
     {
         return await _context.CommitteeMembers
             .Include(member => member.CommitteeRole)
-                .ThenInclude(role => role.ConferenceCommittee)
-                    .ThenInclude(committee => committee.ConferenceSettings)
-                        .ThenInclude(settings => settings.Conference)
+            .ThenInclude(role => role.ConferenceCommittee)
+            .ThenInclude(committee => committee.ConferenceSettings)
+            .ThenInclude(settings => settings.Conference)
             .FirstOrDefaultAsync(member => member.Id == memberId);
     }
 

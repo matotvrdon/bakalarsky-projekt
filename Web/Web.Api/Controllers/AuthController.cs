@@ -22,8 +22,12 @@ public class AuthController : ControllerBase
         try
         {
             var response = await _authService.LoginAsync(dto);
+
             if (response is null)
+            {
                 return Unauthorized();
+            }
+
             return Ok(response);
         }
         catch (RegistrationFlowException ex)
@@ -32,7 +36,21 @@ public class AuthController : ControllerBase
         }
     }
 
+    [HttpPost("admin-login")]
+    public async Task<IActionResult> AdminLogin([FromBody] LoginRequestDto dto)
+    {
+        var response = await _authService.AdminLoginAsync(dto);
 
+        if (response is null)
+        {
+            return Unauthorized(new
+            {
+                message = "Prihlásenie je povolené iba administrátorovi."
+            });
+        }
+
+        return Ok(response);
+    }
 
     [HttpPost("register-simple")]
     public async Task<IActionResult> Register([FromBody] RegistrationSimpleRequestDto dto)

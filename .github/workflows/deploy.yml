@@ -27,7 +27,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: "10.0.x"
 
       - name: Restore dependencies
         run: dotnet restore Web.sln
@@ -54,48 +54,47 @@ jobs:
           if [[ "${{ github.event_name }}" == "push" ]]; then
             case "${{ github.ref_name }}" in
               dev)
-                echo 'matrix={"include":[{"env":"Development","branch":"dev","compose":"docker-compose.dev.yml","image_tag":"dev-latest"}]}' >> $GITHUB_OUTPUT
-                echo 'should_deploy=true' >> $GITHUB_OUTPUT
+                echo 'matrix={"include":[{"env":"Development","deploy_env":"dev","image_tag":"dev-latest"}]}' >> "$GITHUB_OUTPUT"
+                echo 'should_deploy=true' >> "$GITHUB_OUTPUT"
                 ;;
               test)
-                echo 'matrix={"include":[{"env":"Test","branch":"test","compose":"docker-compose.test.yml","image_tag":"test-latest"}]}' >> $GITHUB_OUTPUT
-                echo 'should_deploy=true' >> $GITHUB_OUTPUT
+                echo 'matrix={"include":[{"env":"Test","deploy_env":"test","image_tag":"test-latest"}]}' >> "$GITHUB_OUTPUT"
+                echo 'should_deploy=true' >> "$GITHUB_OUTPUT"
                 ;;
               main)
-                echo 'matrix={"include":[{"env":"Production","branch":"main","compose":"docker-compose.prod.yml","image_tag":"prod-latest"}]}' >> $GITHUB_OUTPUT
-                echo 'should_deploy=true' >> $GITHUB_OUTPUT
+                echo 'matrix={"include":[{"env":"Production","deploy_env":"prod","image_tag":"prod-latest"}]}' >> "$GITHUB_OUTPUT"
+                echo 'should_deploy=true' >> "$GITHUB_OUTPUT"
                 ;;
               *)
-                echo 'matrix={"include":[]}' >> $GITHUB_OUTPUT
-                echo 'should_deploy=false' >> $GITHUB_OUTPUT
+                echo 'matrix={"include":[]}' >> "$GITHUB_OUTPUT"
+                echo 'should_deploy=false' >> "$GITHUB_OUTPUT"
                 ;;
             esac
           elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             case "${{ inputs.environment }}" in
               Development)
-                echo 'matrix={"include":[{"env":"Development","branch":"dev","compose":"docker-compose.dev.yml","image_tag":"dev-latest"}]}' >> $GITHUB_OUTPUT
-                echo 'should_deploy=true' >> $GITHUB_OUTPUT
+                echo 'matrix={"include":[{"env":"Development","deploy_env":"dev","image_tag":"dev-latest"}]}' >> "$GITHUB_OUTPUT"
+                echo 'should_deploy=true' >> "$GITHUB_OUTPUT"
                 ;;
               Test)
-                echo 'matrix={"include":[{"env":"Test","branch":"test","compose":"docker-compose.test.yml","image_tag":"test-latest"}]}' >> $GITHUB_OUTPUT
-                echo 'should_deploy=true' >> $GITHUB_OUTPUT
+                echo 'matrix={"include":[{"env":"Test","deploy_env":"test","image_tag":"test-latest"}]}' >> "$GITHUB_OUTPUT"
+                echo 'should_deploy=true' >> "$GITHUB_OUTPUT"
                 ;;
               Production)
-                echo 'matrix={"include":[{"env":"Production","branch":"main","compose":"docker-compose.prod.yml","image_tag":"prod-latest"}]}' >> $GITHUB_OUTPUT
-                echo 'should_deploy=true' >> $GITHUB_OUTPUT
+                echo 'matrix={"include":[{"env":"Production","deploy_env":"prod","image_tag":"prod-latest"}]}' >> "$GITHUB_OUTPUT"
+                echo 'should_deploy=true' >> "$GITHUB_OUTPUT"
                 ;;
               *)
-                echo 'matrix={"include":[]}' >> $GITHUB_OUTPUT
-                echo 'should_deploy=false' >> $GITHUB_OUTPUT
+                echo 'matrix={"include":[]}' >> "$GITHUB_OUTPUT"
+                echo 'should_deploy=false' >> "$GITHUB_OUTPUT"
                 ;;
             esac
           else
-            echo 'matrix={"include":[]}' >> $GITHUB_OUTPUT
-            echo 'should_deploy=false' >> $GITHUB_OUTPUT
+            echo 'matrix={"include":[]}' >> "$GITHUB_OUTPUT"
+            echo 'should_deploy=false' >> "$GITHUB_OUTPUT"
           fi
 
-  # Build job beží na GitHub-hosted runner
-  build:
+  build-image:
     needs: set-matrix
     if: needs.set-matrix.outputs.should_deploy == 'true'
     runs-on: ubuntu-latest
@@ -111,8 +110,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set image repo
-        run: |
-          echo "IMAGE_REPO=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+        run: echo "BACKEND_IMAGE_REPO=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -124,48 +122,42 @@ jobs:
           username: ${{ secrets.GHCR_USERNAME }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      - name: Build and push image
+      - name: Build and push backend image
         uses: docker/build-push-action@v6
         with:
           context: ./Web
           file: ./Web/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}
-            ghcr.io/${{ env.IMAGE_REPO }}:${{ github.sha }}
+            ghcr.io/${{ env.BACKEND_IMAGE_REPO }}:${{ env.IMAGE_TAG }}
+            ghcr.io/${{ env.BACKEND_IMAGE_REPO }}:${{ github.sha }}
 
-  # Deploy job beží na self-hosted runner (priamo na VM)
   deploy:
-    needs: [set-matrix, build]
+    needs: [set-matrix, build-image]
     if: needs.set-matrix.outputs.should_deploy == 'true'
-    runs-on: self-hosted
+    runs-on: [self-hosted, conference-prod]
     strategy:
       matrix: ${{ fromJson(needs.set-matrix.outputs.matrix) }}
     environment: ${{ matrix.env }}
     env:
+      DEPLOY_ENV: ${{ matrix.deploy_env }}
       IMAGE_TAG: ${{ matrix.image_tag }}
-      COMPOSE_FILE: ${{ matrix.compose }}
-      DEPLOY_ENV: ${{ matrix.env }}
+      DEPLOY_DIR: /home/student1/conference-app
+      BACKEND_IMAGE_REPO: matotvrdon/bakalarsky-projekt
+      FRONTEND_IMAGE_REPO: matotvrdon/bakalarsky-projekt-frontend
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set environment variables
-        run: |
-          echo "IMAGE_REPO=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
-          echo "DEPLOY_ENV_LOWER=$(echo '${{ matrix.env }}' | tr '[:upper:]' '[:lower:]' | sed 's/production/prod/' | sed 's/development/dev/')" >> "$GITHUB_ENV"
-
       - name: Login to GHCR
         run: echo '${{ secrets.GHCR_TOKEN }}' | docker login ghcr.io -u '${{ secrets.GHCR_USERNAME }}' --password-stdin
 
-      - name: Ensure deploy directory exists
-        run: mkdir -p /srv/web-api/docker
-
-      - name: Copy compose files
+      - name: Prepare deploy directory
         run: |
-          cp Web/docker-compose.dev.yml /srv/web-api/
-          cp Web/docker-compose.test.yml /srv/web-api/
-          cp Web/docker-compose.prod.yml /srv/web-api/
+          mkdir -p "$DEPLOY_DIR"
+          cp deploy/docker-compose.yml "$DEPLOY_DIR/docker-compose.yml"
+          cp deploy/docker-compose.proxy.yml "$DEPLOY_DIR/docker-compose.proxy.yml"
+          cp deploy/Caddyfile "$DEPLOY_DIR/Caddyfile"
 
       - name: Pull and deploy
         env:
@@ -182,24 +174,76 @@ jobs:
           EMAIL_LOGIN_URL: ${{ secrets.EMAIL_LOGIN_URL }}
           EMAIL_SECURE_SOCKET_OPTION: ${{ secrets.EMAIL_SECURE_SOCKET_OPTION }}
         run: |
-          export IMAGE_REPO="${IMAGE_REPO}"
+          docker network inspect conference-public >/dev/null 2>&1 || docker network create conference-public
+
+          for container in conference-api conference-frontend; do
+            if docker container inspect "$container" >/dev/null 2>&1; then
+              docker network connect conference-public "$container" 2>/dev/null || true
+            fi
+          done
+
+          export DEPLOY_ENV="${DEPLOY_ENV}"
+          export COMPOSE_PROJECT_NAME="conference-${DEPLOY_ENV}"
+          if [ "$DEPLOY_ENV" = "prod" ]; then
+            export PGDATA_VOLUME=conference_pgdata
+            export STORAGE_VOLUME=conference_storage
+          else
+            export PGDATA_VOLUME="conference_${DEPLOY_ENV}_pgdata"
+            export STORAGE_VOLUME="conference_${DEPLOY_ENV}_storage"
+          fi
           export IMAGE_TAG="${IMAGE_TAG}"
+          export BACKEND_IMAGE_REPO="${BACKEND_IMAGE_REPO}"
+          export FRONTEND_IMAGE_REPO="${FRONTEND_IMAGE_REPO}"
           export POSTGRES_USER="${POSTGRES_USER}"
           export POSTGRES_PASSWORD="${POSTGRES_PASSWORD}"
           export POSTGRES_DB="${POSTGRES_DB}"
-          export DATABASE_AUTO_MIGRATE="${DATABASE_AUTO_MIGRATE:-false}"
+          export DATABASE_AUTO_MIGRATE="${DATABASE_AUTO_MIGRATE:-true}"
           export EMAIL_HOST="${EMAIL_HOST}"
-          export EMAIL_PORT="${EMAIL_PORT}"
+          export EMAIL_PORT="${EMAIL_PORT:-587}"
           export EMAIL_USERNAME="${EMAIL_USERNAME}"
           export EMAIL_PASSWORD="${EMAIL_PASSWORD}"
           export EMAIL_FROM_ADDRESS="${EMAIL_FROM_ADDRESS}"
           export EMAIL_FROM_NAME="${EMAIL_FROM_NAME}"
           export EMAIL_LOGIN_URL="${EMAIL_LOGIN_URL}"
-          export EMAIL_SECURE_SOCKET_OPTION="${EMAIL_SECURE_SOCKET_OPTION}"
-          export COMPOSE_PROJECT_NAME="web-${DEPLOY_ENV_LOWER}"
-          
-          docker compose -f /srv/web-api/${COMPOSE_FILE} pull
-          docker compose -f /srv/web-api/${COMPOSE_FILE} up -d
+          export EMAIL_SECURE_SOCKET_OPTION="${EMAIL_SECURE_SOCKET_OPTION:-StartTls}"
+
+          docker compose -f "$DEPLOY_DIR/docker-compose.yml" pull
+          docker compose -f "$DEPLOY_DIR/docker-compose.yml" up -d --remove-orphans
+
+          current_proxy_project=""
+          if docker container inspect conference-caddy >/dev/null 2>&1; then
+            current_proxy_project="$(docker inspect -f '{{ index .Config.Labels "com.docker.compose.project" }}' conference-caddy 2>/dev/null || true)"
+          fi
+
+          if [ "$DEPLOY_ENV" = "prod" ] || [ "$current_proxy_project" = "conference-proxy" ] || [ -z "$current_proxy_project" ]; then
+            if [ -n "$current_proxy_project" ] && [ "$current_proxy_project" != "conference-proxy" ]; then
+              docker rm -f conference-caddy
+            fi
+
+            export COMPOSE_PROJECT_NAME=conference-proxy
+            docker compose -f "$DEPLOY_DIR/docker-compose.proxy.yml" up -d
+            docker exec conference-caddy caddy reload --config /etc/caddy/Caddyfile || docker restart conference-caddy
+          else
+            echo "Keeping legacy conference-caddy until Production deploy initializes the shared proxy."
+          fi
+
+      - name: Show deployment status
+        run: |
+          export DEPLOY_ENV="${DEPLOY_ENV}"
+          export COMPOSE_PROJECT_NAME="conference-${DEPLOY_ENV}"
+          if [ "$DEPLOY_ENV" = "prod" ]; then
+            export PGDATA_VOLUME=conference_pgdata
+            export STORAGE_VOLUME=conference_storage
+          else
+            export PGDATA_VOLUME="conference_${DEPLOY_ENV}_pgdata"
+            export STORAGE_VOLUME="conference_${DEPLOY_ENV}_storage"
+          fi
+          docker compose -f "$DEPLOY_DIR/docker-compose.yml" ps
+          docker compose -f "$DEPLOY_DIR/docker-compose.yml" logs --tail=80 api
+          docker ps --filter "name=conference" --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
+          if docker container inspect conference-caddy >/dev/null 2>&1; then
+            docker logs --tail=80 conference-caddy
+          fi
 
       - name: Cleanup old Docker images
         run: docker image prune -af --filter 'until=168h' || true

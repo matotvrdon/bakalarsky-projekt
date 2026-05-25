@@ -1,0 +1,46 @@
+conferences.kpi.fei.tuke.sk {
+	encode gzip
+
+	@api path /api/* /swagger* /storage/*
+	handle @api {
+		reverse_proxy conference-prod-api:8080 conference-api:8080 {
+			lb_policy first
+			lb_try_duration 5s
+			fail_duration 30s
+		}
+	}
+
+	handle {
+		reverse_proxy conference-prod-frontend:80 conference-frontend:80 {
+			lb_policy first
+			lb_try_duration 5s
+			fail_duration 30s
+		}
+	}
+}
+
+test.conferences.kpi.fei.tuke.sk {
+	encode gzip
+
+	@api path /api/* /swagger* /storage/*
+	handle @api {
+		reverse_proxy conference-test-api:8080
+	}
+
+	handle {
+		reverse_proxy conference-test-frontend:80
+	}
+}
+
+dev.conferences.kpi.fei.tuke.sk {
+	encode gzip
+
+	@api path /api/* /swagger* /storage/*
+	handle @api {
+		reverse_proxy conference-dev-api:8080
+	}
+
+	handle {
+		reverse_proxy conference-dev-frontend:80
+	}
+}

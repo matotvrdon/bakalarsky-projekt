@@ -1,0 +1,25 @@
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: conference-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - public
+
+networks:
+  public:
+    name: conference-public
+    external: true
+
+volumes:
+  caddy_data:
+    name: conference_caddy_data
+  caddy_config:
+    name: conference_caddy_config

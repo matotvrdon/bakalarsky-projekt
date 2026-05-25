@@ -17,18 +17,22 @@ public class AuthRepository : IAuthRepository
     public async Task<User?> GetByEmailAsync(string email)
     {
         return await _dbContext.Users
-            .SingleOrDefaultAsync(x => x.Email == email);
+            .AsNoTracking()
+            .FirstOrDefaultAsync(user => user.Email == email);
     }
-    
+
     public async Task<bool> ExistsAsync(string email)
     {
-        return await _dbContext.Users.AnyAsync(x => x.Email == email);
+        return await _dbContext.Users
+            .AsNoTracking()
+            .AnyAsync(user => user.Email == email);
     }
 
     public async Task<User> AddAsync(User user)
     {
         await _dbContext.Users.AddAsync(user);
         await _dbContext.SaveChangesAsync();
+
         return user;
     }
 }

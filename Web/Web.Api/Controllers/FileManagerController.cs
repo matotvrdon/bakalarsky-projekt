@@ -9,14 +9,17 @@ namespace Web.Api.Controllers;
 public class FileManagerController : ControllerBase
 {
     private readonly IFileManagerService _fileManagerService;
-    
-    public FileManagerController(IWebHostEnvironment hostingEnvironment, IFileManagerService fileManagerService)
+
+    public FileManagerController(IFileManagerService fileManagerService)
     {
         _fileManagerService = fileManagerService;
     }
 
     [HttpPost("upload/{participantId:int}/{fileType}")]
-    public async Task<IActionResult> Upload(IFormFile file, [FromRoute] int participantId, [FromRoute] FileType fileType)
+    public async Task<IActionResult> Upload(
+        IFormFile file,
+        [FromRoute] int participantId,
+        [FromRoute] FileType fileType)
     {
         try
         {
@@ -41,9 +44,15 @@ public class FileManagerController : ControllerBase
     public async Task<IActionResult> Download([FromRoute] int fileManagerId)
     {
         try
-        { 
+        {
             var fileManager = await _fileManagerService.DownloadAsync(fileManagerId);
-            return PhysicalFile(fileManager.FilePath, fileManager.ContentType, fileManager.FileName, enableRangeProcessing: true);
+
+            return PhysicalFile(
+                fileManager.FilePath,
+                fileManager.ContentType,
+                fileManager.FileName,
+                enableRangeProcessing: true
+            );
         }
         catch (KeyNotFoundException)
         {
@@ -58,14 +67,19 @@ public class FileManagerController : ControllerBase
             return StatusCode(500, ex.Message);
         }
     }
-    
+
     [HttpGet("view/{fileManagerId:int}")]
     public async Task<IActionResult> View([FromRoute] int fileManagerId)
     {
         try
         {
             var fileManager = await _fileManagerService.ViewAsync(fileManagerId);
-            return PhysicalFile(fileManager.FilePath, fileManager.ContentType, enableRangeProcessing: true);
+
+            return PhysicalFile(
+                fileManager.FilePath,
+                fileManager.ContentType,
+                enableRangeProcessing: true
+            );
         }
         catch (KeyNotFoundException ex)
         {
@@ -82,7 +96,9 @@ public class FileManagerController : ControllerBase
     }
 
     [HttpPut("{fileManagerId:int}/{email}/approve")]
-    public async Task<IActionResult> Approve([FromRoute] int fileManagerId, [FromRoute] string email)
+    public async Task<IActionResult> Approve(
+        [FromRoute] int fileManagerId,
+        [FromRoute] string email)
     {
         try
         {
@@ -106,9 +122,11 @@ public class FileManagerController : ControllerBase
             return StatusCode(500, ex.Message);
         }
     }
-    
+
     [HttpPut("{fileManagerId:int}/{email}/reject")]
-    public async Task<IActionResult> Reject([FromRoute] int fileManagerId, [FromRoute] string email)
+    public async Task<IActionResult> Reject(
+        [FromRoute] int fileManagerId,
+        [FromRoute] string email)
     {
         try
         {
