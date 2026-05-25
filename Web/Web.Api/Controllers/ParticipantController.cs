@@ -1,9 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Web.DataAccess.Data;
-using Web.Domain.Enums;
-using Web.Domain.Models;
 using Web.Services.Abstractions;
 using Web.Services.DTOs;
 
@@ -15,44 +10,70 @@ public class ParticipantController : ControllerBase
 {
     private readonly IParticipantService _participantService;
 
-    public ParticipantController(IParticipantService participantService, IConfiguration configuration, IWebHostEnvironment env)
+    public ParticipantController(IParticipantService participantService)
     {
         _participantService = participantService;
     }
 
-    [HttpPut]
-    public async Task<IActionResult> Update([FromBody] ParticipantUpdateDto dto)
-    {
-        var participant = await _participantService.UpdateAsync(dto);
-        if (participant == null)
-            return NotFound();
-        return Ok(participant);
-    }
-    
     [HttpGet("by-user/{userId:int}")]
-    public async Task<IActionResult> GetByUserId([FromRoute] int userId)
+    public async Task<ActionResult<ParticipantDto>> GetByUserId([FromRoute] int userId)
     {
-        var participants = await _participantService.GetByUserIdAsync(userId);
-        if (participants == null)
+        var participant = await _participantService.GetByUserIdAsync(userId);
+
+        if (participant == null)
+        {
             return NotFound();
-        return Ok(participants);
+        }
+
+        return Ok(participant);
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get()
+    public async Task<ActionResult<List<ParticipantDto>>> GetAll()
+    {
+        var participants = await _participantService.GetAllAsync();
+
+        return Ok(participants);
+    }
+
+    [HttpPut]
+    public async Task<ActionResult<ParticipantDto>> Update([FromBody] ParticipantDto dto)
+    {
+        var participant = await _participantService.UpdateAsync(dto);
+
+        if (participant == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(participant);
+    }
+
+    [HttpPut("{participantId:int}/status-assignments")]
+    public async Task<ActionResult<ParticipantDto>> UpdateStatusAssignments(
+        [FromRoute] int participantId,
+        [FromBody] ParticipantStatusAssignmentsUpdateDto dto)
     {
         try
         {
-            var participant = await _participantService.GetAllByActiveConferenceAsync();
+            var participant = await _participantService.UpdateStatusAssignmentsAsync(
+                participantId,
+                dto
+            );
+
+            if (participant == null)
+            {
+                return NotFound();
+            }
+
             return Ok(participant);
         }
-        catch (KeyNotFoundException ex)
+        catch (InvalidOperationException ex)
         {
-            return NotFound(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, ex.Message);
+            return BadRequest(new
+            {
+                message = ex.Message
+            });
         }
     }
 }

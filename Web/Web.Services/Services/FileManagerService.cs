@@ -283,7 +283,7 @@ public class FileManagerService : IFileManagerService
     {
         return fileType switch
         {
-            FileType.StudentVerification => "StudentVerification",
+            FileType.StatusConfirmation => "StatusConfirmation",
             FileType.Submission => "Submission",
             FileType.Invoice => "Invoice",
             _ => ""

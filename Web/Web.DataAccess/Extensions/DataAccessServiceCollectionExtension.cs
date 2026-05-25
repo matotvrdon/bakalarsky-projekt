@@ -23,6 +23,8 @@ public static class DataAccessServiceCollectionExtension
         services.AddScoped<ISubmissionSettingsRepository, SubmissionSettingsRepository>();
         services.AddScoped<IInvoiceRepository, InvoiceRepository>();
         services.AddScoped<ISupplierRepository, SupplierRepository>();
+        services.AddScoped<IParticipantStatusRepository, ParticipantStatusRepository>();
+        services.AddScoped<IParticipantStatusAssignmentRepository, ParticipantStatusAssignmentRepository>();
         
         return services;
     }

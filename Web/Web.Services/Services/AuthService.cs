@@ -1,8 +1,8 @@
+using System.Net;
+using System.Security.Cryptography;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Net;
-using System.Security.Cryptography;
 using Web.DataAccess.Abstractions;
 using Web.DataAccess.Data;
 using Web.Domain.Enums;
@@ -20,6 +20,7 @@ public class AuthService : IAuthService
     private readonly IMapper _mapper;
     private readonly IParticipantRepository _participantRepository;
     private readonly IConferenceRepository _conferenceRepository;
+    private readonly IParticipantStatusRepository _participantStatusRepository;
     private readonly AppDbContext _dbContext;
     private readonly IEmailService _emailService;
 
@@ -29,6 +30,7 @@ public class AuthService : IAuthService
         IMapper mapper,
         IParticipantRepository participantRepository,
         IConferenceRepository conferenceRepository,
+        IParticipantStatusRepository participantStatusRepository,
         AppDbContext dbContext,
         IEmailService emailService)
     {
@@ -37,6 +39,7 @@ public class AuthService : IAuthService
         _mapper = mapper;
         _participantRepository = participantRepository;
         _conferenceRepository = conferenceRepository;
+        _participantStatusRepository = participantStatusRepository;
         _dbContext = dbContext;
         _emailService = emailService;
     }
@@ -123,6 +126,25 @@ public class AuthService : IAuthService
             });
         }
 
+        var selectedStatusIds = dto.ParticipantStatusIds
+            .Distinct()
+            .ToList();
+
+        var selectedStatuses = await _participantStatusRepository.GetActiveByIdsForConferenceAsync(
+            dto.ConferenceId,
+            selectedStatusIds
+        );
+
+        if (selectedStatuses.Count != selectedStatusIds.Count)
+        {
+            throw new RegistrationFlowException(HttpStatusCode.BadRequest, new RegistrationErrorResponseDto
+            {
+                Code = "INVALID_PARTICIPANT_STATUS",
+                Message = "One or more selected participant statuses are invalid.",
+                Field = "participantStatusIds"
+            });
+        }
+
         var participant = _mapper.Map<Participant>(dto);
         participant.FirstName = participant.FirstName.Trim();
         participant.LastName = participant.LastName.Trim();
@@ -130,6 +152,17 @@ public class AuthService : IAuthService
         participant.Affiliation = NormalizeOptional(dto.Affiliation);
         participant.Country = NormalizeOptional(dto.Country);
         participant.UserId = null;
+
+        foreach (var status in selectedStatuses)
+        {
+            participant.StatusAssignments.Add(new ParticipantStatusAssignment
+            {
+                ParticipantStatusId = status.Id,
+                ApprovalState = status.RequiresApproval
+                    ? StatusApprovalState.MissingFile
+                    : StatusApprovalState.NotRequired
+            });
+        }
 
         await _participantRepository.AddAsync(participant);
 
@@ -190,8 +223,10 @@ public class AuthService : IAuthService
         try
         {
             await _authRepository.AddAsync(user);
+
             participant.UserId = user.Id;
             await _participantRepository.UpdateAsync(participant);
+
             await transaction.CommitAsync();
         }
         catch (DbUpdateException)
@@ -275,7 +310,7 @@ public class AuthService : IAuthService
         var user = new User
         {
             Email = email,
-            PasswordHash = "",
+            PasswordHash = string.Empty,
             Role = UserRole.Participant,
             CreatedAt = DateTime.UtcNow
         };
@@ -295,9 +330,9 @@ public class AuthService : IAuthService
 
         var password = new char[length];
 
-        for (var i = 0; i < length; i++)
+        for (var index = 0; index < length; index++)
         {
-            password[i] = symbols[RandomNumberGenerator.GetInt32(symbols.Length)];
+            password[index] = symbols[RandomNumberGenerator.GetInt32(symbols.Length)];
         }
 
         return new string(password);

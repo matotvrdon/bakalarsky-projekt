@@ -18,6 +18,14 @@ public class ParticipantRepository : IParticipantRepository
     public async Task<Participant?> GetByIdAsync(int id)
     {
         return await _dbContext.Participants
+            .Include(participant => participant.Conference)
+            .Include(participant => participant.ConferenceEntry)
+            .Include(participant => participant.User)
+            .Include(participant => participant.StatusAssignments)
+            .ThenInclude(assignment => assignment.ParticipantStatus)
+            .Include(participant => participant.StatusAssignments)
+            .ThenInclude(assignment => assignment.FileManager)
+            .Include(participant => participant.FileManagers.OrderByDescending(fileManager => fileManager.CreatedAt))
             .FirstOrDefaultAsync(participant => participant.Id == id);
     }
 
@@ -26,6 +34,11 @@ public class ParticipantRepository : IParticipantRepository
         return await _dbContext.Participants
             .Include(participant => participant.Conference)
             .Include(participant => participant.ConferenceEntry)
+            .Include(participant => participant.User)
+            .Include(participant => participant.StatusAssignments)
+            .ThenInclude(assignment => assignment.ParticipantStatus)
+            .Include(participant => participant.StatusAssignments)
+            .ThenInclude(assignment => assignment.FileManager)
             .Include(participant => participant.FileManagers.OrderByDescending(fileManager => fileManager.CreatedAt))
             .Where(participant =>
                 participant.UserId == userId &&
@@ -40,7 +53,13 @@ public class ParticipantRepository : IParticipantRepository
     public async Task<Participant?> GetByUserIdConferenceIdAsync(int userId, int conferenceId)
     {
         return await _dbContext.Participants
+            .Include(participant => participant.Conference)
             .Include(participant => participant.ConferenceEntry)
+            .Include(participant => participant.User)
+            .Include(participant => participant.StatusAssignments)
+            .ThenInclude(assignment => assignment.ParticipantStatus)
+            .Include(participant => participant.StatusAssignments)
+            .ThenInclude(assignment => assignment.FileManager)
             .FirstOrDefaultAsync(participant =>
                 participant.UserId == userId &&
                 participant.ConferenceId == conferenceId
@@ -78,17 +97,20 @@ public class ParticipantRepository : IParticipantRepository
         return participant;
     }
 
-    public async Task<List<Participant>> GetAllByActiveConferenceAsync()
+    public async Task<List<Participant>> GetAllAsync()
     {
         return await _dbContext.Participants
             .Include(participant => participant.Conference)
             .Include(participant => participant.ConferenceEntry)
+            .Include(participant => participant.User)
+            .Include(participant => participant.StatusAssignments)
+            .ThenInclude(assignment => assignment.ParticipantStatus)
+            .Include(participant => participant.StatusAssignments)
+            .ThenInclude(assignment => assignment.FileManager)
             .Include(participant => participant.FileManagers.OrderByDescending(fileManager => fileManager.CreatedAt))
-            .Where(participant =>
-                participant.Conference != null &&
-                participant.Conference.IsPublished &&
-                participant.Conference.Status == ConferenceStatus.Active
-            )
+            .OrderByDescending(participant => participant.ConferenceId)
+            .ThenBy(participant => participant.LastName)
+            .ThenBy(participant => participant.FirstName)
             .ToListAsync();
     }
 }

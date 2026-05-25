@@ -34,6 +34,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IInvoicePdfGenerator, InvoicePdfGenerator>();
         services.AddScoped<ISupplierService, SupplierService>();
         services.AddScoped<IInvoicePdfStorageService, InvoicePdfStorageService>();
+        services.AddScoped<IParticipantStatusService, ParticipantStatusService>();
+        services.AddScoped<IParticipantStatusAssignmentService, ParticipantStatusAssignmentService>();
         
         services.AddTransient<IEmailService, EmailService>();
         

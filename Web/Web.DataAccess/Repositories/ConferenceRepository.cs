@@ -47,6 +47,28 @@ public class ConferenceRepository : IConferenceRepository
             .ToListAsync();
     }
 
+    public async Task<Dictionary<int, int>> GetParticipantCountsAsync(List<int> conferenceIds)
+    {
+        if (conferenceIds.Count == 0)
+        {
+            return new Dictionary<int, int>();
+        }
+
+        return await _dbContext.Participants
+            .AsNoTracking()
+            .Where(participant => conferenceIds.Contains(participant.ConferenceId))
+            .GroupBy(participant => participant.ConferenceId)
+            .Select(group => new
+            {
+                ConferenceId = group.Key,
+                Count = group.Count()
+            })
+            .ToDictionaryAsync(
+                item => item.ConferenceId,
+                item => item.Count
+            );
+    }
+
     public async Task<Conference> AddAsync(Conference conference)
     {
         await _dbContext.Conferences.AddAsync(conference);
@@ -92,6 +114,7 @@ public class ConferenceRepository : IConferenceRepository
         }
 
         _dbContext.Conferences.Remove(conferenceToDelete);
+
         await _dbContext.SaveChangesAsync();
     }
 
@@ -118,6 +141,8 @@ public class ConferenceRepository : IConferenceRepository
             .ThenInclude(day => day.ProgramItems)
             .ThenInclude(item => item.ProgramSessions)
             .ThenInclude(session => session.ProgramPresentations)
+            .Include(conference => conference.Settings)
+            .ThenInclude(settings => settings!.ParticipantStatuses)
             .AsNoTracking();
     }
 }

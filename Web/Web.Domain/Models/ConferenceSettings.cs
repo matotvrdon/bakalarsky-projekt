@@ -16,4 +16,5 @@ public class ConferenceSettings
     public List<ProgramDay>? ProgramDays { get; set; }
     public List<ConferenceEntry>? ConferenceEntries { get; set; }
     public List<ConferenceCommittee>? ConferenceCommittees { get; set; }
+    public List<ParticipantStatus> ParticipantStatuses { get; set; }
 }
