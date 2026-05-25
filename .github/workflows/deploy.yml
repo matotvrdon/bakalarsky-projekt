@@ -184,13 +184,27 @@ jobs:
 
           export DEPLOY_ENV="${DEPLOY_ENV}"
           export COMPOSE_PROJECT_NAME="conference-${DEPLOY_ENV}"
-          if [ "$DEPLOY_ENV" = "prod" ]; then
-            export PGDATA_VOLUME=conference_pgdata
-            export STORAGE_VOLUME=conference_storage
-          else
-            export PGDATA_VOLUME="conference_${DEPLOY_ENV}_pgdata"
-            export STORAGE_VOLUME="conference_${DEPLOY_ENV}_storage"
-          fi
+          case "$DEPLOY_ENV" in
+            prod)
+              export PGDATA_VOLUME=conference_pgdata
+              export STORAGE_VOLUME=conference_storage
+              export POSTGRES_HOST_PORT=15432
+              ;;
+            dev)
+              export PGDATA_VOLUME=conference_dev_pgdata
+              export STORAGE_VOLUME=conference_dev_storage
+              export POSTGRES_HOST_PORT=15433
+              ;;
+            test)
+              export PGDATA_VOLUME=conference_test_pgdata
+              export STORAGE_VOLUME=conference_test_storage
+              export POSTGRES_HOST_PORT=15434
+              ;;
+            *)
+              echo "Unsupported DEPLOY_ENV: $DEPLOY_ENV"
+              exit 1
+              ;;
+          esac
           export IMAGE_TAG="${IMAGE_TAG}"
           export BACKEND_IMAGE_REPO="${BACKEND_IMAGE_REPO}"
           export FRONTEND_IMAGE_REPO="${FRONTEND_IMAGE_REPO}"
@@ -231,13 +245,27 @@ jobs:
         run: |
           export DEPLOY_ENV="${DEPLOY_ENV}"
           export COMPOSE_PROJECT_NAME="conference-${DEPLOY_ENV}"
-          if [ "$DEPLOY_ENV" = "prod" ]; then
-            export PGDATA_VOLUME=conference_pgdata
-            export STORAGE_VOLUME=conference_storage
-          else
-            export PGDATA_VOLUME="conference_${DEPLOY_ENV}_pgdata"
-            export STORAGE_VOLUME="conference_${DEPLOY_ENV}_storage"
-          fi
+          case "$DEPLOY_ENV" in
+            prod)
+              export PGDATA_VOLUME=conference_pgdata
+              export STORAGE_VOLUME=conference_storage
+              export POSTGRES_HOST_PORT=15432
+              ;;
+            dev)
+              export PGDATA_VOLUME=conference_dev_pgdata
+              export STORAGE_VOLUME=conference_dev_storage
+              export POSTGRES_HOST_PORT=15433
+              ;;
+            test)
+              export PGDATA_VOLUME=conference_test_pgdata
+              export STORAGE_VOLUME=conference_test_storage
+              export POSTGRES_HOST_PORT=15434
+              ;;
+            *)
+              echo "Unsupported DEPLOY_ENV: $DEPLOY_ENV"
+              exit 1
+              ;;
+          esac
           docker compose -f "$DEPLOY_DIR/docker-compose.yml" ps
           docker compose -f "$DEPLOY_DIR/docker-compose.yml" logs --tail=80 api
           docker ps --filter "name=conference" --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
